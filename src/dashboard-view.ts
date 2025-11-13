@@ -1,6 +1,6 @@
 import { ItemView, WorkspaceLeaf } from "obsidian";
 import { mount, unmount } from "svelte";
-import MainComponent from "./components/Main.svelte";
+import MainComponent from "./components/Dashboard.svelte";
 
 export const VIEW_TYPE_DASHBOARD = "dashboard-view";
 
@@ -26,7 +26,7 @@ export class DashboardView extends ItemView {
 	async onOpen() {
 		this.component = mount(MainComponent, {
 			target: this.contentEl,
-			props: { message: "Dashboard Plugin Ready Again!" },
+			props: {},
 		});
 	}
 

@@ -38,7 +38,7 @@ export default class DashboardPlugin extends Plugin {
 			if (leaves.length > 0) {
 				leaf = leaves[0];
 			} else {
-				leaf = workspace.getRightLeaf(false);
+				leaf = workspace.getLeaf("tab");
 			}
 
 			if (leaf !== null) {
