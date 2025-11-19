@@ -92,7 +92,10 @@
 				disabled={!day.isCurrentMonth}
 				on:click={() => day.isCurrentMonth && handleDateClick(day.day)}
 			>
-				{day.day}
+				<span class="day-number">{day.day}</span>
+				<div class="day-content">
+					<!-- Future: Events/activities will go here -->
+				</div>
 			</button>
 		{/each}
 	</div>
@@ -123,44 +126,81 @@
 		display: grid;
 		grid-template-columns: repeat(7, 1fr);
 		gap: var(--size-4-2);
-		flex: 1;
+		grid-auto-rows: 1fr;
 	}
 
 	.day-cell {
-		aspect-ratio: 1;
+		min-height: 80px;
 		background: var(--background-primary);
-		border: 1px solid var(--background-modifier-accent);
+		border: 1px solid var(--background-modifier-border);
 		color: var(--text-normal);
 		border-radius: var(--radius-s);
 		cursor: pointer;
-		font-size: var(--font-ui-medium);
+		font-size: var(--font-ui-small);
 		display: flex;
-		align-items: center;
-		justify-content: center;
-		transition: all 0.2s ease;
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 6px 8px;
+		gap: 4px;
+		transition: all 0.15s ease;
 	}
 
 	.day-cell:hover:not(:disabled) {
-		background: var(--background-modifier-accent);
-		border-color: var(--text-accent);
+		background: var(--background-modifier-hover);
+		border-color: var(--interactive-accent);
+		transform: translateY(-1px);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+
+	.day-cell:active:not(:disabled) {
+		transform: translateY(0);
+		background: var(--background-modifier-active-hover);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	}
+
+	.day-number {
+		font-weight: 500;
+		font-size: var(--font-ui-small);
+		line-height: 1;
+		width: 24px;
+		height: 24px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		transition: all 0.15s ease;
+	}
+
+	.day-content {
+		flex: 1;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		overflow: hidden;
+	}
+
+	.day-cell.today .day-number {
+		background: var(--interactive-accent);
+		color: var(--text-on-accent);
+		font-weight: 600;
 	}
 
 	.day-cell.today {
-		background: var(--interactive-accent);
-		color: var(--background-primary);
-		font-weight: bold;
-		box-shadow: 0 0 8px rgba(0, 200, 200, 0.3);
+		background: var(--background-primary);
 	}
 
 	.day-cell.today:hover {
-		background: var(--interactive-accent-hover);
+		background: var(--background-modifier-hover);
 	}
 
 	.day-cell.selected {
-		background: var(--interactive-accent);
-		color: var(--text-on-accent);
-		font-weight: bold;
+		background: var(--background-secondary);
 		border-color: var(--interactive-accent);
+	}
+
+	.day-cell.selected .day-number {
+		font-weight: 600;
 	}
 
 	.day-cell.other-month {
