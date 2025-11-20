@@ -1,7 +1,7 @@
 <script>
 	import Layout from "./Layout.svelte";
 	import CalendarWidget from "./Calendar/CalendarWidget.svelte";
-	import QuickTasksPanel from "./QuickTasks/QuickTasksPanel.svelte";
+	import FleetingNotesPanel from "./FleetingNotes/FleetingNotesPanel.svelte";
 	import ProjectsPanel from "./ProjectsPanel.svelte";
 
 	export let app;
@@ -9,7 +9,7 @@
 
 <Layout>
 	<CalendarWidget slot="calendar" />
-	<QuickTasksPanel slot="tasks" {app} />
+	<FleetingNotesPanel slot="fleeting-notes" {app} />
 	<ProjectsPanel slot="projects" />
 </Layout>
 

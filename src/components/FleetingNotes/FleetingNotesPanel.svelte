@@ -1,30 +1,32 @@
 <script lang="ts">
 	import { format } from "date-fns";
 	import type { App } from "obsidian";
-	import type { QuickTask } from "../../types/quick-task";
+	import type { FleetingNote } from "../../types/fleeting-note";
 	import { selectedDate } from "../../stores/store";
-	import { getTasksForDate } from "../../quick-tasks";
+	import { getNotesForDate } from "../../fleeting-notes";
 	import Island from "../Island/Island.svelte";
 
 	export let app: App;
 
-	let tasks: QuickTask[] = [];
+	let tasks: FleetingNote[] = [];
 	let loading = true;
 	let error: string | null = null;
 
+	console.log("FleetingNotesPanel initialized with app:", app);
+
 	// Reactive statement to reload tasks when selectedDate changes
 	$: if ($selectedDate) {
-		loadTasks($selectedDate);
+		loadNotes($selectedDate);
 	}
 
-	async function loadTasks(date: Date) {
+	async function loadNotes(date: Date) {
 		loading = true;
 		error = null;
 		try {
-			tasks = await getTasksForDate(app, date);
+			tasks = await getNotesForDate(app, date);
 		} catch (e) {
-			console.error("Failed to load tasks:", e);
-			error = "Failed to load tasks";
+			console.error("Failed to load notes:", e);
+			error = "Failed to load notes";
 			tasks = [];
 		} finally {
 			loading = false;
@@ -35,22 +37,40 @@
 		return format(date, "EEEE, MMMM d, yyyy");
 	}
 
-	function handleTaskClick(task: QuickTask) {
-		// Future: Open task file or edit task
-		console.log("Task clicked:", task);
+	function handleTaskClick(task: FleetingNote) {
+		// Future: Open note file or edit note
+		console.log("Note clicked:", task);
+	}
+
+	async function openAllNotes() {
+		// Open or reveal the Fleeting Notes view
+		await app.workspace.getLeaf(false).setViewState({
+			type: "fleeting-notes-view",
+			active: true,
+		});
 	}
 </script>
 
-<Island title="Quick Tasks" subtitle={formatDate($selectedDate)}>
+<Island>
+	<div slot="header" class="panel-header">
+		<div class="header-content">
+			<h3 class="panel-title">Fleeting Notes</h3>
+			<span class="panel-subtitle">{formatDate($selectedDate)}</span>
+		</div>
+		<button on:click={openAllNotes} class="view-all-button">
+			View All
+		</button>
+	</div>
+
 	{#if loading}
-		<div class="panel-loading">Loading tasks...</div>
+		<div class="panel-loading">Loading notes...</div>
 	{:else if error}
 		<div class="panel-error">{error}</div>
 	{:else if tasks.length === 0}
 		<div class="panel-empty">
-			<p>No tasks for this date</p>
+			<p>No notes for this date</p>
 			<span class="empty-hint"
-				>Add tasks to your Inbox or create dated tasks</span
+				>Add notes to your Inbox or create dated notes</span
 			>
 		</div>
 	{:else}
@@ -74,6 +94,62 @@
 </Island>
 
 <style>
+	.panel-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--size-4-3);
+		padding-bottom: var(--size-4-2);
+		border-bottom: 1px solid var(--background-modifier-border);
+	}
+
+	.header-content {
+		display: flex;
+		flex-direction: column;
+		gap: var(--size-4-1);
+		flex: 1;
+	}
+
+	.panel-title {
+		margin: 0;
+		font-size: var(--font-ui-medium);
+		font-weight: 600;
+		color: var(--text-normal);
+	}
+
+	.panel-subtitle {
+		font-size: var(--font-ui-small);
+		color: var(--text-muted);
+		font-weight: 500;
+	}
+
+	.view-all-button {
+		background: var(--background-primary);
+		border: 1px solid var(--background-modifier-border);
+		color: var(--text-normal);
+		cursor: pointer;
+		font-size: var(--font-ui-small);
+		font-weight: 500;
+		padding: 6px 12px;
+		height: 32px;
+		border-radius: var(--radius-s);
+		transition: all 0.15s ease;
+		white-space: nowrap;
+	}
+
+	.view-all-button:hover {
+		background: var(--background-modifier-hover);
+		border-color: var(--background-modifier-border-hover);
+		transform: translateY(-1px);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+
+	.view-all-button:active {
+		transform: translateY(0);
+		background: var(--background-modifier-active-hover);
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	}
+
 	.panel-loading,
 	.panel-error,
 	.panel-empty {

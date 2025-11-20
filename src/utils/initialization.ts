@@ -1,20 +1,20 @@
 import { App, TFolder } from "obsidian";
 import {
-	QUICK_TASKS_FOLDER,
-	QUICK_TASKS_INBOX_FILE,
-} from "../quick-tasks/consts";
+	FLEETING_NOTES_FOLDER,
+	FLEETING_NOTES_INBOX_FILE,
+} from "../fleeting-notes/consts";
 
 const FOLDERS = {
-	QUICK_TASKS: QUICK_TASKS_FOLDER,
+	FLEETING_NOTES: FLEETING_NOTES_FOLDER,
 	DAILY: "Daily",
 	PROJECTS: "Projects",
 	GOALS: "Goals",
 };
 
 const FILES = {
-	QUICK_TASKS_INBOX: {
-		folder: FOLDERS.QUICK_TASKS,
-		name: QUICK_TASKS_INBOX_FILE,
+	FLEETING_NOTES_INBOX: {
+		folder: FOLDERS.FLEETING_NOTES,
+		name: FLEETING_NOTES_INBOX_FILE,
 	},
 };
 
@@ -101,14 +101,14 @@ export async function initializeVaultStructure(app: App): Promise<void> {
  */
 function getFileContent(fileKey: string): string {
 	switch (fileKey) {
-		case "QUICK_TASKS_INBOX":
+		case "FLEETING_NOTES_INBOX":
 			return `# Inbox
 
-Add your tasks here. You can optionally add dates in YYYY-MM-DD format:
+Add your fleeting notes here. You can optionally add dates in YYYY-MM-DD format:
 
-- [ ] Task without a date
-- [ ] Task for specific date @2025-01-15
-- [ ] Another task 2025-01-20
+- [ ] Note without a date
+- [ ] Note for specific date @2025-01-15
+- [ ] Another note 2025-01-20
 `;
 		default:
 			return "";

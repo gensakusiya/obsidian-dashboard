@@ -28,7 +28,7 @@
 	.island {
 		display: flex;
 		flex-direction: column;
-		height: 100%;
+		height: fit-content;
 		padding: var(--size-4-4);
 		background: var(--background-secondary);
 		border-radius: var(--radius-m);

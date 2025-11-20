@@ -1,7 +1,7 @@
 <div class="layout">
 	<slot name="calendar"></slot>
 	<slot name="projects"></slot>
-	<slot name="tasks"></slot>
+	<slot name="fleeting-notes"></slot>
 </div>
 
 <style>
@@ -10,7 +10,7 @@
 		grid-template-columns: 1fr 2fr;
 		grid-template-areas:
 			"calendar projects"
-			"calendar tasks";
+			"calendar fleeting-notes";
 		gap: var(--size-4-8);
 		height: 100%;
 		padding: var(--size-4-4);
@@ -27,8 +27,8 @@
 		grid-area: projects;
 	}
 
-	::slotted(.tasks-panel) {
-		grid-area: tasks;
+	::slotted(.fleeting-notes-panel) {
+		grid-area: fleeting-notes;
 	}
 
 	@media (max-width: 768px) {

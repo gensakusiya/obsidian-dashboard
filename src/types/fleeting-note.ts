@@ -1,4 +1,4 @@
-export interface QuickTask {
+export interface FleetingNote {
 	id: string;
 	title: string;
 	completed: boolean;

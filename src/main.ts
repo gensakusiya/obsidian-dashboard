@@ -6,7 +6,7 @@ import {
 	WorkspaceLeaf,
 } from "obsidian";
 import { DashboardView } from "./views/dashboard";
-import { QuickTasksView, VIEW_TYPE_QUICK_TASKS } from "./views/quick-tasks";
+import { FleetingNotesView, VIEW_TYPE_FLEETING_NOTES } from "./views/fleeting-notes";
 import { initializeVaultStructure } from "./utils/initialization";
 
 interface DashboardPluginSettings {
@@ -38,8 +38,8 @@ export default class DashboardPlugin extends Plugin {
 			(leaf) => new DashboardView(leaf)
 		);
 		this.registerView(
-			VIEW_TYPE_QUICK_TASKS,
-			(leaf) => new QuickTasksView(leaf)
+			VIEW_TYPE_FLEETING_NOTES,
+			(leaf) => new FleetingNotesView(leaf)
 		);
 
 		// Create ribbon icon for Dashboard
@@ -63,14 +63,14 @@ export default class DashboardPlugin extends Plugin {
 			}
 		});
 
-		// Add command for Quick Tasks
+		// Add command for Fleeting Notes
 		this.addCommand({
-			id: "open-quick-tasks",
-			name: "Open Quick Tasks",
+			id: "open-fleeting-notes",
+			name: "Open Fleeting Notes",
 			callback: async () => {
 				const workspace = this.app.workspace;
 				let leaf: WorkspaceLeaf | null = null;
-				const leaves = workspace.getLeavesOfType(VIEW_TYPE_QUICK_TASKS);
+				const leaves = workspace.getLeavesOfType(VIEW_TYPE_FLEETING_NOTES);
 
 				if (leaves.length > 0) {
 					leaf = leaves[0];
@@ -80,7 +80,7 @@ export default class DashboardPlugin extends Plugin {
 
 				if (leaf !== null) {
 					await leaf.setViewState({
-						type: VIEW_TYPE_QUICK_TASKS,
+						type: VIEW_TYPE_FLEETING_NOTES,
 						active: true,
 					});
 					workspace.revealLeaf(leaf);

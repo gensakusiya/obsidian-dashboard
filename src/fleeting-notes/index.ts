@@ -1,21 +1,21 @@
 import { App, TFile } from "obsidian";
 import { parse, isEqual } from "date-fns";
-import type { QuickTask } from "../types/quick-task";
+import type { FleetingNote } from "../types/fleeting-note";
 import { simpleHash } from "../utils/hash";
 import {
-	QUICK_TASKS_DATE_FORMAT,
-	QUICK_TASKS_FOLDER,
-	QUICK_TASKS_INBOX_FILE,
+	FLEETING_NOTES_DATE_FORMAT,
+	FLEETING_NOTES_FOLDER,
+	FLEETING_NOTES_INBOX_FILE,
 } from "./consts";
 
 /**
  * Parse a markdown file and extract uncompleted tasks only
  */
-function parseTasksFromContent(
+function parseNotesFromContent(
 	content: string,
 	sourceFile: string
-): QuickTask[] {
-	const tasks: QuickTask[] = [];
+): FleetingNote[] {
+	const tasks: FleetingNote[] = [];
 	const lines = content.split("\n");
 
 	for (const line of lines) {
@@ -27,7 +27,7 @@ function parseTasksFromContent(
 		const date = extractDate(taskText);
 
 		tasks.push({
-			id: generateTaskId(sourceFile, taskText),
+			id: generateNoteId(sourceFile, taskText),
 			title: taskText,
 			completed: false,
 			date,
@@ -49,38 +49,39 @@ function extractDate(text: string): string | undefined {
 /**
  * Generate a unique ID for a task
  */
-function generateTaskId(source: string, text: string): string {
+function generateNoteId(source: string, text: string): string {
 	const hash = simpleHash(source + text);
 	return `task-${hash}`;
 }
 
 /**
- * Get all tasks from QuickTasks folder
+ * Get all tasks from FleetingNotes folder
  */
-export async function getAllQuickTasks(app: App): Promise<QuickTask[]> {
-	const quickTasksFolder =
-		app.vault.getAbstractFileByPath(QUICK_TASKS_FOLDER);
+export async function getAllFleetingNotes(app: App): Promise<FleetingNote[]> {
+	const fleetingNotesFolder = app.vault.getAbstractFileByPath(
+		FLEETING_NOTES_FOLDER
+	);
 
-	if (!quickTasksFolder) {
-		console.warn("[QuickTasks] QuickTasks folder not found");
+	if (!fleetingNotesFolder) {
+		console.warn("[FleetingNotes] FleetingNotes folder not found");
 		return [];
 	}
 
-	const allTasks: QuickTask[] = [];
+	const allTasks: FleetingNote[] = [];
 
-	// Get all markdown files in QuickTasks folder
+	// Get all markdown files in FleetingNotes folder
 	const files = app.vault
 		.getMarkdownFiles()
-		.filter((file) => file.path.startsWith(`${QUICK_TASKS_FOLDER}/`));
+		.filter((file) => file.path.startsWith(`${FLEETING_NOTES_FOLDER}/`));
 
 	for (const file of files) {
 		try {
 			const content = await app.vault.read(file);
-			const tasks = parseTasksFromContent(content, file.name);
+			const tasks = parseNotesFromContent(content, file.name);
 			allTasks.push(...tasks);
 		} catch (error) {
 			console.error(
-				`[QuickTasks] Error reading file ${file.path}:`,
+				`[FleetingNotes] Error reading file ${file.path}:`,
 				error
 			);
 		}
@@ -93,18 +94,18 @@ export async function getAllQuickTasks(app: App): Promise<QuickTask[]> {
  * Get tasks for a specific date (YYYY-MM-DD format)
  * If no tasks for the date, returns tasks from Inbox.md
  */
-export async function getTasksForDate(
+export async function getNotesForDate(
 	app: App,
 	date: Date
-): Promise<QuickTask[]> {
-	const allTasks = await getAllQuickTasks(app);
+): Promise<FleetingNote[]> {
+	const allTasks = await getAllFleetingNotes(app);
 
 	// Filter tasks that have the specified date
 	const tasksForDate = allTasks.filter((task) => {
 		if (!task.date) return false;
 
 		return isEqual(
-			parse(task.date, QUICK_TASKS_DATE_FORMAT, new Date()),
+			parse(task.date, FLEETING_NOTES_DATE_FORMAT, new Date()),
 			date
 		);
 	});
@@ -114,40 +115,39 @@ export async function getTasksForDate(
 		return tasksForDate;
 	}
 
-	// Otherwise, return tasks from Inbox.md
-	return getTasksFromInbox(app);
+	return [];
 }
 
 /**
  * Get tasks from Inbox.md
  */
-export async function getTasksFromInbox(app: App): Promise<QuickTask[]> {
-	return getTasksFromFile(app, QUICK_TASKS_INBOX_FILE);
+export async function getNotesFromInbox(app: App): Promise<FleetingNote[]> {
+	return getNotesFromFile(app, FLEETING_NOTES_INBOX_FILE);
 }
 
 /**
  * Get tasks from a specific file
  */
-export async function getTasksFromFile(
+export async function getNotesFromFile(
 	app: App,
 	fileName: string
-): Promise<QuickTask[]> {
+): Promise<FleetingNote[]> {
 	const filePath = fileName.endsWith(".md")
-		? `${QUICK_TASKS_FOLDER}/${fileName}`
-		: `${QUICK_TASKS_FOLDER}/${fileName}.md`;
+		? `${FLEETING_NOTES_FOLDER}/${fileName}`
+		: `${FLEETING_NOTES_FOLDER}/${fileName}.md`;
 
 	const file = app.vault.getAbstractFileByPath(filePath);
 
 	if (!file || !(file instanceof TFile)) {
-		console.warn(`[QuickTasks] File not found: ${filePath}`);
+		console.warn(`[FleetingNotes] File not found: ${filePath}`);
 		return [];
 	}
 
 	try {
 		const content = await app.vault.read(file);
-		return parseTasksFromContent(content, file.name);
+		return parseNotesFromContent(content, file.name);
 	} catch (error) {
-		console.error(`[QuickTasks] Error reading file ${filePath}:`, error);
+		console.error(`[FleetingNotes] Error reading file ${filePath}:`, error);
 		return [];
 	}
 }
