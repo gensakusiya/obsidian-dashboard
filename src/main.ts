@@ -5,7 +5,9 @@ import {
 	Setting,
 	WorkspaceLeaf,
 } from "obsidian";
-import { DashboardView } from "./dashboard-view";
+import { DashboardView } from "./views/dashboard";
+import { QuickTasksView, VIEW_TYPE_QUICK_TASKS } from "./views/quick-tasks";
+import { initializeVaultStructure } from "./utils/initialization";
 
 interface DashboardPluginSettings {
 	mode: string;
@@ -21,15 +23,26 @@ export default class DashboardPlugin extends Plugin {
 	settings: DashboardPluginSettings;
 
 	async onload() {
+		// Wait for workspace to be fully loaded
+		if (!this.app.workspace.layoutReady) {
+			this.app.workspace.onLayoutReady(() => {
+				initializeVaultStructure(this.app);
+			});
+		}
+
 		await this.loadSettings();
 
-		// Register the custom view
+		// Register the custom views
 		this.registerView(
 			VIEW_TYPE_DASHBOARD,
 			(leaf) => new DashboardView(leaf)
 		);
+		this.registerView(
+			VIEW_TYPE_QUICK_TASKS,
+			(leaf) => new QuickTasksView(leaf)
+		);
 
-		// Create ribbon icon
+		// Create ribbon icon for Dashboard
 		this.addRibbonIcon("dice", "Open Dashboard", async () => {
 			const workspace = this.app.workspace;
 			let leaf: WorkspaceLeaf | null = null;
@@ -48,6 +61,31 @@ export default class DashboardPlugin extends Plugin {
 				});
 				workspace.revealLeaf(leaf);
 			}
+		});
+
+		// Add command for Quick Tasks
+		this.addCommand({
+			id: "open-quick-tasks",
+			name: "Open Quick Tasks",
+			callback: async () => {
+				const workspace = this.app.workspace;
+				let leaf: WorkspaceLeaf | null = null;
+				const leaves = workspace.getLeavesOfType(VIEW_TYPE_QUICK_TASKS);
+
+				if (leaves.length > 0) {
+					leaf = leaves[0];
+				} else {
+					leaf = workspace.getLeaf("tab");
+				}
+
+				if (leaf !== null) {
+					await leaf.setViewState({
+						type: VIEW_TYPE_QUICK_TASKS,
+						active: true,
+					});
+					workspace.revealLeaf(leaf);
+				}
+			},
 		});
 
 		// Add settings tab

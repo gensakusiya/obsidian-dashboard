@@ -1,13 +1,15 @@
 <script>
 	import Layout from "./Layout.svelte";
 	import CalendarWidget from "./Calendar/CalendarWidget.svelte";
-	import TasksPanel from "./TasksPanel.svelte";
+	import QuickTasksPanel from "./QuickTasks/QuickTasksPanel.svelte";
 	import ProjectsPanel from "./ProjectsPanel.svelte";
+
+	export let app;
 </script>
 
 <Layout>
 	<CalendarWidget slot="calendar" />
-	<TasksPanel slot="tasks" />
+	<QuickTasksPanel slot="tasks" {app} />
 	<ProjectsPanel slot="projects" />
 </Layout>
 

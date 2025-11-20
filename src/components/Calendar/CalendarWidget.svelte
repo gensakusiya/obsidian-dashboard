@@ -4,6 +4,7 @@
 	import { onMount } from "svelte";
 	import { selectedDate } from "../../stores/store";
 	import Calendar from "./Calendar.svelte";
+	import Island from "../Island/Island.svelte";
 
 	let currentMonth = new Date();
 	let prevButtonEl: HTMLButtonElement;
@@ -37,8 +38,8 @@
 	}
 </script>
 
-<div class="calendar-widget">
-	<div class="calendar-header">
+<Island>
+	<div slot="header" class="calendar-header">
 		<div class="nav-controls">
 			<button
 				bind:this={prevButtonEl}
@@ -64,18 +65,9 @@
 	</div>
 
 	<Calendar selectedMonth={currentMonth} onDateSelect={handleDateSelect} />
-</div>
+</Island>
 
 <style>
-	.calendar-widget {
-		padding: var(--size-4-4);
-		background: var(--background-secondary);
-		border-radius: var(--radius-m);
-		display: flex;
-		flex-direction: column;
-		height: fit-content;
-	}
-
 	.calendar-header {
 		display: flex;
 		justify-content: space-between;
