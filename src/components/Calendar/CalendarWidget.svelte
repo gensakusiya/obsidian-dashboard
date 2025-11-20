@@ -2,6 +2,7 @@
 	import { format, addMonths, isSameMonth } from "date-fns";
 	import { setIcon } from "obsidian";
 	import { onMount } from "svelte";
+	import { selectedDate } from "../../stores/store";
 	import Calendar from "./Calendar.svelte";
 
 	let currentMonth = new Date();
@@ -29,6 +30,10 @@
 
 	function goToToday() {
 		currentMonth = new Date();
+	}
+
+	function handleDateSelect(date: Date) {
+		selectedDate.update(() => date);
 	}
 </script>
 
@@ -58,10 +63,7 @@
 		</div>
 	</div>
 
-	<Calendar
-		selectedMonth={currentMonth}
-		onDateSelect={(date) => console.log(date)}
-	/>
+	<Calendar selectedMonth={currentMonth} onDateSelect={handleDateSelect} />
 </div>
 
 <style>

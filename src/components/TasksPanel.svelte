@@ -1,6 +1,10 @@
+<script>
+	import { selectedDate } from "../stores/store";
+</script>
+
 <div class="tasks-panel">
 	<h2>Tasks Panel</h2>
-	<!-- Tasks implementation goes here -->
+	<div>Tasks for {$selectedDate.toLocaleDateString()}</div>
 </div>
 
 <style>
