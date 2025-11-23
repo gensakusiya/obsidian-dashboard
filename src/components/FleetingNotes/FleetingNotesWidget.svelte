@@ -1,18 +1,17 @@
 <script lang="ts">
-	import { format } from "date-fns";
 	import type { App } from "obsidian";
 	import type { FleetingNote } from "../../types/fleeting-note";
 	import { selectedDate } from "../../stores/store";
 	import { getNotesForDate } from "../../fleeting-notes";
+	import { formatDate } from "../../utils/date";
 	import Island from "../Island/Island.svelte";
+	import IslandHeader from "../Island/IslandHeader.svelte";
 
 	export let app: App;
 
 	let tasks: FleetingNote[] = [];
 	let loading = true;
 	let error: string | null = null;
-
-	console.log("FleetingNotesPanel initialized with app:", app);
 
 	// Reactive statement to reload tasks when selectedDate changes
 	$: if ($selectedDate) {
@@ -33,16 +32,12 @@
 		}
 	}
 
-	function formatDate(date: Date): string {
-		return format(date, "EEEE, MMMM d, yyyy");
-	}
-
 	function handleTaskClick(task: FleetingNote) {
 		// Future: Open note file or edit note
 		console.log("Note clicked:", task);
 	}
 
-	async function openAllNotes() {
+	async function handleOpenAllNotes() {
 		// Open or reveal the Fleeting Notes view
 		await app.workspace.getLeaf(false).setViewState({
 			type: "fleeting-notes-view",
@@ -52,15 +47,13 @@
 </script>
 
 <Island>
-	<div slot="header" class="panel-header">
-		<div class="header-content">
-			<h3 class="panel-title">Fleeting Notes</h3>
-			<span class="panel-subtitle">{formatDate($selectedDate)}</span>
-		</div>
-		<button on:click={openAllNotes} class="view-all-button">
-			View All
-		</button>
-	</div>
+	<IslandHeader
+		slot="header"
+		title="Fleeting Notes"
+		subtitle={formatDate($selectedDate)}
+		buttonText="View All"
+		onButtonClick={handleOpenAllNotes}
+	/>
 
 	{#if loading}
 		<div class="panel-loading">Loading notes...</div>
@@ -69,23 +62,23 @@
 	{:else if tasks.length === 0}
 		<div class="panel-empty">
 			<p>No notes for this date</p>
-			<span class="empty-hint"
-				>Add notes to your Inbox or create dated notes</span
-			>
+			<span class="empty-hint">
+				Add notes to your Inbox or create dated notes
+			</span>
 		</div>
 	{:else}
-		<div class="tasks-list">
+		<div class="fleeting-notes">
 			{#each tasks as task (task.id)}
 				<button
-					class="task-item"
+					class="fleeting-note"
 					on:click={() => handleTaskClick(task)}
 				>
-					<div class="task-checkbox">
+					<div class="note-checkbox">
 						<input type="checkbox" disabled />
 					</div>
-					<div class="task-content">
-						<span class="task-title">{task.title}</span>
-						<span class="task-source">{task.source}</span>
+					<div class="note-content">
+						<span class="note-title">{task.title}</span>
+						<span class="note-source">{task.source}</span>
 					</div>
 				</button>
 			{/each}
@@ -94,62 +87,6 @@
 </Island>
 
 <style>
-	.panel-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: var(--size-4-3);
-		padding-bottom: var(--size-4-2);
-		border-bottom: 1px solid var(--background-modifier-border);
-	}
-
-	.header-content {
-		display: flex;
-		flex-direction: column;
-		gap: var(--size-4-1);
-		flex: 1;
-	}
-
-	.panel-title {
-		margin: 0;
-		font-size: var(--font-ui-medium);
-		font-weight: 600;
-		color: var(--text-normal);
-	}
-
-	.panel-subtitle {
-		font-size: var(--font-ui-small);
-		color: var(--text-muted);
-		font-weight: 500;
-	}
-
-	.view-all-button {
-		background: var(--background-primary);
-		border: 1px solid var(--background-modifier-border);
-		color: var(--text-normal);
-		cursor: pointer;
-		font-size: var(--font-ui-small);
-		font-weight: 500;
-		padding: 6px 12px;
-		height: 32px;
-		border-radius: var(--radius-s);
-		transition: all 0.15s ease;
-		white-space: nowrap;
-	}
-
-	.view-all-button:hover {
-		background: var(--background-modifier-hover);
-		border-color: var(--background-modifier-border-hover);
-		transform: translateY(-1px);
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	.view-all-button:active {
-		transform: translateY(0);
-		background: var(--background-modifier-active-hover);
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-	}
-
 	.panel-loading,
 	.panel-error,
 	.panel-empty {
@@ -178,7 +115,7 @@
 		color: var(--text-faint);
 	}
 
-	.tasks-list {
+	.fleeting-notes {
 		display: flex;
 		flex-direction: column;
 		gap: var(--size-4-2);
@@ -187,7 +124,7 @@
 		scrollbar-gutter: stable;
 	}
 
-	.task-item {
+	.fleeting-note {
 		display: flex;
 		align-items: flex-start;
 		gap: var(--size-4-2);
@@ -201,31 +138,31 @@
 		text-align: left;
 	}
 
-	.task-item:hover {
+	.fleeting-note:hover {
 		background: var(--background-modifier-hover);
 		border-color: var(--interactive-accent);
 		transform: translateX(2px);
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 
-	.task-item:active {
+	.fleeting-note:active {
 		transform: translateX(0);
 		background: var(--background-modifier-active-hover);
 	}
 
-	.task-checkbox {
+	.note-checkbox {
 		display: flex;
 		align-items: center;
 		margin-top: 2px;
 	}
 
-	.task-checkbox input[type="checkbox"] {
+	.note-checkbox input[type="checkbox"] {
 		cursor: pointer;
 		width: 18px;
 		height: 18px;
 	}
 
-	.task-content {
+	.note-content {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
@@ -233,7 +170,7 @@
 		min-width: 0;
 	}
 
-	.task-title {
+	.note-title {
 		font-size: var(--font-ui-small);
 		color: var(--text-normal);
 		line-height: 1.4;
@@ -241,7 +178,7 @@
 		overflow-wrap: break-word;
 	}
 
-	.task-source {
+	.note-source {
 		font-size: var(--font-ui-smaller);
 		color: var(--text-muted);
 		font-weight: 500;
