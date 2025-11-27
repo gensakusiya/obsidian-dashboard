@@ -7,28 +7,35 @@
 <style>
 	.layout {
 		display: grid;
-		grid-template-columns: 1fr 2fr;
-		grid-template-areas:
-			"calendar projects"
-			"calendar fleeting-notes";
-		gap: var(--size-4-8);
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: 1.5fr 1fr;
+		gap: var(--size-4-4);
 		height: 100%;
 		padding: var(--size-4-4);
 		background: var(--background-primary);
-		overflow: auto;
+		color: var(--text-normal);
+		overflow: hidden;
 	}
 
 	::slotted(.calendar-widget) {
+		grid-column: 1;
 		grid-row: 1 / 3;
-		grid-area: calendar;
+		min-height: 0;
+		overflow: hidden;
 	}
 
 	::slotted(.projects-panel) {
-		grid-area: projects;
+		grid-column: 2;
+		grid-row: 1;
+		min-height: 0;
+		overflow: hidden;
 	}
 
 	::slotted(.fleeting-notes-panel) {
-		grid-area: fleeting-notes;
+		grid-column: 2;
+		grid-row: 2;
+		min-height: 0;
+		overflow: hidden;
 	}
 
 	@media (max-width: 768px) {
