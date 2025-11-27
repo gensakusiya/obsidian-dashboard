@@ -45,13 +45,14 @@
 </script>
 
 <Island>
-	<IslandHeader
-		slot="header"
-		title="Projects"
-		subtitle={formatDate($selectedDate)}
-		buttonText="View All"
-		onButtonClick={handleViewAll}
-	/>
+	{#snippet header()}
+		<IslandHeader
+			title="Projects"
+			subtitle={formatDate($selectedDate)}
+			buttonText="View All"
+			onButtonClick={handleViewAll}
+		/>
+	{/snippet}
 
 	{#if loading}
 		<div class="panel-loading">Loading projects...</div>

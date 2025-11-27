@@ -47,13 +47,14 @@
 </script>
 
 <Island>
-	<IslandHeader
-		slot="header"
-		title="Fleeting Notes"
-		subtitle={formatDate($selectedDate)}
-		buttonText="View All"
-		onButtonClick={handleOpenAllNotes}
-	/>
+	{#snippet header()}
+		<IslandHeader
+			title="Fleeting Notes"
+			subtitle={formatDate($selectedDate)}
+			buttonText="View All"
+			onButtonClick={handleOpenAllNotes}
+		/>
+	{/snippet}
 
 	{#if loading}
 		<div class="panel-loading">Loading notes...</div>
