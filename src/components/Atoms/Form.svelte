@@ -1,10 +1,12 @@
 <script lang="ts">
-	let { children } = $props();
+	import type { Snippet } from "svelte";
+
+	let { children }: { children?: Snippet } = $props();
 </script>
 
-<form class="form">
-	{@render children()}
-</form>
+<div class="form">
+	{@render children?.()}
+</div>
 
 <style>
 	.form {
