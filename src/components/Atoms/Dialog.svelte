@@ -30,7 +30,7 @@
 	});
 </script>
 
-<dialog bind:this={dialog} closedby="any">
+<dialog bind:this={dialog}>
 	<div class="header">
 		<h3 id="title" class="title">{title}</h3>
 		<Button
