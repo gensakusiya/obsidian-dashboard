@@ -4,11 +4,7 @@
 	import FleetingNotesPanel from "./FleetingNotes/FleetingNotesWidget.svelte";
 	import ProjectsWidget from "./Projects/ProjectsWidget.svelte";
 
-	import Dialog from "./Atoms/Dialog.svelte";
-	import Input from "./Atoms/Input.svelte";
-	import Button from "./Atoms/Button.svelte";
-	import Toolbox from "./Atoms/Toolbox.svelte";
-	import Form from "./Atoms/Form.svelte";
+	import NewFleetingNoteDialog from "./FleetingNotes/NewFleetingNoteDialog.svelte";
 
 	export let app;
 
@@ -17,15 +13,6 @@
 	function openQuickAdd() {
 		dialogElement.showModal();
 	}
-
-	function closeQuickAdd() {
-		dialogElement.close();
-	}
-
-	function handleNoteAdded() {
-		// Refresh widget when note added
-		// Could trigger a reload of FleetingNotesPanel here
-	}
 </script>
 
 <Layout>
@@ -33,6 +20,8 @@
 	<FleetingNotesPanel slot="fleeting-notes" {app} />
 	<ProjectsWidget slot="projects" {app} />
 </Layout>
+
+<NewFleetingNoteDialog bind:dialog={dialogElement} />
 
 <!-- Floating Action Button -->
 <button class="fab" on:click={openQuickAdd} aria-label="Quick add note">
@@ -51,26 +40,6 @@
 		<line x1="5" y1="12" x2="19" y2="12"></line>
 	</svg>
 </button>
-
-<Dialog
-	bind:dialog={dialogElement}
-	onClose={closeQuickAdd}
-	title="Quick Add Note"
->
-	<Form>
-		Simple test content inside dialog.
-
-		<Input placeholder="Type something..." ariaLabel="Quick add input" />
-	</Form>
-
-	{#snippet footer()}
-		<Toolbox>
-			<Button onClick={closeQuickAdd}>Cancel</Button>
-			<Button onClick={handleNoteAdded} variant="primary">Add Note</Button
-			>
-		</Toolbox>
-	{/snippet}
-</Dialog>
 
 <style>
 	.fab {
