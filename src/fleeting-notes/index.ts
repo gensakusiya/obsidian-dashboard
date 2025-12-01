@@ -151,3 +151,45 @@ export async function getNotesFromFile(
 		return [];
 	}
 }
+
+/**
+ * Add a new fleeting note to Inbox.md
+ * Format: - [ ] {title}
+ */
+export async function addFleetingNote(
+	app: App,
+	title: string
+): Promise<boolean> {
+	if (!title.trim()) {
+		console.warn("[FleetingNotes] Cannot add empty note");
+		return false;
+	}
+
+	try {
+		const filePath = `${FLEETING_NOTES_FOLDER}/${FLEETING_NOTES_INBOX_FILE}`;
+		let file = app.vault.getAbstractFileByPath(filePath);
+
+		// Create Inbox.md if it doesn't exist
+		if (!file) {
+			file = await app.vault.create(
+				filePath,
+				`# Inbox\n\n- [ ] ${title}\n`
+			);
+			console.log("[FleetingNotes] Created new note in Inbox");
+			return true;
+		}
+
+		// Append to existing file
+		const content = await app.vault.read(file as TFile);
+		const newContent = content.endsWith("\n")
+			? content + `- [ ] ${title}\n`
+			: content + `\n- [ ] ${title}\n`;
+
+		await app.vault.modify(file as TFile, newContent);
+		console.log("[FleetingNotes] Note added to Inbox");
+		return true;
+	} catch (error) {
+		console.error("[FleetingNotes] Error adding note:", error);
+		return false;
+	}
+}
