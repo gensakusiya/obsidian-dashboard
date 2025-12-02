@@ -158,9 +158,9 @@ export async function getNotesFromFile(
  */
 export async function addFleetingNote(
 	app: App,
-	title: string
+	note: Partial<FleetingNote>
 ): Promise<boolean> {
-	if (!title.trim()) {
+	if (!note.title?.trim()) {
 		console.warn("[FleetingNotes] Cannot add empty note");
 		return false;
 	}
@@ -169,11 +169,14 @@ export async function addFleetingNote(
 		const filePath = `${FLEETING_NOTES_FOLDER}/${FLEETING_NOTES_INBOX_FILE}`;
 		let file = app.vault.getAbstractFileByPath(filePath);
 
+		const title = note.title.trim();
+		const dateTag = note.date ? ` @${note.date}` : "";
+
 		// Create Inbox.md if it doesn't exist
 		if (!file) {
 			file = await app.vault.create(
 				filePath,
-				`# Inbox\n\n- [ ] ${title}\n`
+				`# Inbox\n\n- [ ] ${title}${dateTag}\n `
 			);
 			console.log("[FleetingNotes] Created new note in Inbox");
 			return true;
@@ -182,11 +185,10 @@ export async function addFleetingNote(
 		// Append to existing file
 		const content = await app.vault.read(file as TFile);
 		const newContent = content.endsWith("\n")
-			? content + `- [ ] ${title}\n`
-			: content + `\n- [ ] ${title}\n`;
+			? content + `- [ ] ${title}${dateTag}\n`
+			: content + `\n- [ ] ${title}${dateTag}\n`;
 
 		await app.vault.modify(file as TFile, newContent);
-		console.log("[FleetingNotes] Note added to Inbox");
 		return true;
 	} catch (error) {
 		console.error("[FleetingNotes] Error adding note:", error);
