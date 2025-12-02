@@ -56,7 +56,6 @@ function generateNoteId(source: string, text: string): string {
 
 /**
  * Get all tasks from FleetingNotes folder
- * todo: add Record<fileName, FleetingNote[]> version
  */
 export async function getAllFleetingNotes(app: App): Promise<FleetingNote[]> {
 	const fleetingNotesFolder = app.vault.getAbstractFileByPath(
@@ -89,6 +88,50 @@ export async function getAllFleetingNotes(app: App): Promise<FleetingNote[]> {
 	}
 
 	return allTasks;
+}
+
+/**
+ * Get all tasks from FleetingNotes folder, grouped by source file name
+ * Returns a Record where keys are file names (without .md) and values are arrays of FleetingNote
+ */
+export async function getAllFleetingNotesGrouped(
+	app: App
+): Promise<Record<string, FleetingNote[]>> {
+	const fleetingNotesFolder = app.vault.getAbstractFileByPath(
+		FLEETING_NOTES_FOLDER
+	);
+
+	if (!fleetingNotesFolder) {
+		console.warn("[FleetingNotes] FleetingNotes folder not found");
+		return {};
+	}
+
+	const grouped: Record<string, FleetingNote[]> = {};
+
+	// Get all markdown files in FleetingNotes folder
+	const files = app.vault
+		.getMarkdownFiles()
+		.filter((file) => file.path.startsWith(`${FLEETING_NOTES_FOLDER}/`));
+
+	for (const file of files) {
+		try {
+			const content = await app.vault.read(file);
+			const tasks = parseNotesFromContent(content, file.name);
+			
+			// Group by source (file name without .md)
+			const source = file.name.replace(".md", "");
+			if (tasks.length > 0) {
+				grouped[source] = tasks;
+			}
+		} catch (error) {
+			console.error(
+				`[FleetingNotes] Error reading file ${file.path}:`,
+				error
+			);
+		}
+	}
+
+	return grouped;
 }
 
 /**
