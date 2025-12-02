@@ -4,7 +4,10 @@
 	interface ButtonProps {
 		buttonEl?: HTMLButtonElement | undefined;
 		ariaLabel?: string;
+		className?: string;
+		title?: string;
 		variant?: "default" | "badge" | "primary";
+		ariaPressed?: boolean | undefined;
 		onClick?: () => void;
 		children?: Snippet;
 	}
@@ -13,6 +16,9 @@
 		buttonEl = $bindable(),
 		ariaLabel = "Button",
 		variant = "default",
+		className = "",
+		title = "",
+		ariaPressed = undefined,
 		onClick = () => void 0,
 		children,
 	}: ButtonProps = $props();
@@ -21,10 +27,12 @@
 <button
 	bind:this={buttonEl}
 	onclick={onClick}
-	class="button"
+	class="button {className}"
 	class:primary={variant === "primary"}
 	class:badge={variant === "badge"}
 	aria-label={ariaLabel}
+	aria-pressed={ariaPressed}
+	{title}
 >
 	{@render children?.()}
 </button>
