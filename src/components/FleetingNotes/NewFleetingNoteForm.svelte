@@ -1,10 +1,14 @@
 <script lang="ts">
-	import { addDays, endOfWeek, format, isDate } from "date-fns";
+	import { addDays, endOfWeek } from "date-fns";
 
-	import Button from "../Atoms/Button.svelte";
 	import Input from "../Atoms/Input.svelte";
 	import Toolbox from "../Atoms/Toolbox.svelte";
 	import Popover from "../Atoms/Popover.svelte";
+	import Button from "../Atoms/Button.svelte";
+	import ToggleButton from "../Atoms/ToggleButton.svelte";
+	import { DatePreset } from "../../fleeting-notes/consts";
+	import { formatDateToDisplay } from "../../utils/date";
+	import CrossIcon from "../Atoms/CrossIcon.svelte";
 
 	interface FormProps {
 		note: string;
@@ -15,29 +19,68 @@
 	let currentDate = new Date();
 	let datePickerEl: HTMLButtonElement | undefined = $state();
 	let isDatePickerOpen = $state(false);
+	let datePressed = $state<DatePreset | null>(null);
+	let dateText = $derived.by((): string => {
+		if (!date) return "no date";
 
-	let dateText = $derived(date ? `@${format(date, "PPP")}` : "no date");
+		switch (datePressed) {
+			case DatePreset.Today:
+				return `Today (${formatDateToDisplay(date)})`;
+			case DatePreset.Tomorrow:
+				return `Tomorrow (${formatDateToDisplay(date)})`;
+			case DatePreset.ThisWeek:
+				return `This Week (${formatDateToDisplay(date)})`;
+		}
 
-	function handleToday() {
-		date = currentDate;
+		return formatDateToDisplay(date);
+	});
+
+	$effect(() => {
+		if (date === undefined) {
+			datePressed = null;
+		}
+	});
+
+	function getDate(pressed: DatePreset | null): Date | undefined {
+		switch (pressed) {
+			case DatePreset.Today:
+				return currentDate;
+			case DatePreset.Tomorrow:
+				return addDays(currentDate, 1);
+			case DatePreset.ThisWeek:
+				return endOfWeek(currentDate, { weekStartsOn: 1 });
+			default:
+				return undefined;
+		}
 	}
 
-	function handleTomorrow() {
-		const tomorrow = addDays(currentDate, 1);
-		date = tomorrow;
+	function handleToday(pressed: boolean) {
+		datePressed = pressed ? DatePreset.Today : null;
+		date = getDate(datePressed);
 	}
 
-	function handleThisWeek() {
-		const endWeek = endOfWeek(currentDate, { weekStartsOn: 1 });
-		date = endWeek;
+	function handleTomorrow(pressed: boolean) {
+		datePressed = pressed ? DatePreset.Tomorrow : null;
+		date = getDate(datePressed);
+	}
+
+	function handleThisWeek(pressed: boolean) {
+		datePressed = pressed ? DatePreset.ThisWeek : null;
+		date = getDate(datePressed);
 	}
 
 	function handleDateOpen() {
 		isDatePickerOpen = true;
+		datePressed = null;
 	}
 
 	function handleDateClose() {
 		isDatePickerOpen = false;
+	}
+
+	function handleResetDate() {
+		date = undefined;
+		datePressed = null;
 	}
 </script>
 
@@ -47,13 +90,44 @@
 	bind:value={note}
 />
 
-<span class="date-text" class:empty={!date}>{dateText}</span>
+<div class="date-display">
+	<span class="date-text" class:empty={!date}>{dateText}</span>
+	{#if date}
+		<CrossIcon
+			ariaLabel="Clear date"
+			title="Clear date"
+			onClick={handleResetDate}
+		></CrossIcon>
+	{/if}
+</div>
 
 <Toolbox>
-	<Button onClick={handleToday}>Today</Button>
-	<Button onClick={handleTomorrow}>Tomorrow</Button>
-	<Button onClick={handleThisWeek}>This week</Button>
-	<Button onClick={handleDateOpen} bind:buttonEl={datePickerEl}>Date</Button>
+	<ToggleButton
+		ariaLabel="Today button"
+		pressed={datePressed === DatePreset.Today}
+		onToggle={handleToday}
+	>
+		Today
+	</ToggleButton>
+	<ToggleButton
+		ariaLabel="Tomorrow button"
+		pressed={datePressed === DatePreset.Tomorrow}
+		onToggle={handleTomorrow}>Tomorrow</ToggleButton
+	>
+	<ToggleButton
+		ariaLabel="This Week button"
+		pressed={datePressed === DatePreset.ThisWeek}
+		onToggle={handleThisWeek}
+	>
+		This Week
+	</ToggleButton>
+	<Button
+		bind:buttonEl={datePickerEl}
+		ariaLabel="Date button"
+		onClick={handleDateOpen}
+	>
+		Date
+	</Button>
 </Toolbox>
 
 <Popover
@@ -68,11 +142,17 @@
 	.date-text {
 		color: var(--text-normal);
 		font-size: var(--font-ui-smaller);
-		padding-top: var(--size-4-1);
 		line-height: var(--line-height-tight);
 	}
 
 	.date-text.empty {
 		color: var(--text-muted);
+	}
+
+	.date-display {
+		display: flex;
+		align-items: center;
+		gap: var(--size-4-2);
+		height: var(--input-height);
 	}
 </style>

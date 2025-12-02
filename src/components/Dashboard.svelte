@@ -21,7 +21,7 @@
 	<ProjectsWidget slot="projects" {app} />
 </Layout>
 
-<NewFleetingNoteDialog bind:dialog={dialogElement} />
+<NewFleetingNoteDialog bind:dialog={dialogElement} {app} />
 
 <!-- Floating Action Button -->
 <button class="fab" on:click={openQuickAdd} aria-label="Quick add note">
