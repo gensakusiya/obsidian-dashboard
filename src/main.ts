@@ -6,8 +6,15 @@ import {
 	WorkspaceLeaf,
 } from "obsidian";
 import { DashboardView } from "./views/dashboard";
-import { FleetingNotesView, VIEW_TYPE_FLEETING_NOTES } from "./views/fleeting-notes";
+import {
+	FleetingNotesView,
+	VIEW_TYPE_FLEETING_NOTES,
+} from "./views/fleeting-notes";
 import { initializeVaultStructure } from "./utils/initialization";
+import {
+	createFleetingNotesManager,
+	getFleetingNotesManager,
+} from "./fleeting-notes/manager";
 
 interface DashboardPluginSettings {
 	mode: string;
@@ -70,7 +77,9 @@ export default class DashboardPlugin extends Plugin {
 			callback: async () => {
 				const workspace = this.app.workspace;
 				let leaf: WorkspaceLeaf | null = null;
-				const leaves = workspace.getLeavesOfType(VIEW_TYPE_FLEETING_NOTES);
+				const leaves = workspace.getLeavesOfType(
+					VIEW_TYPE_FLEETING_NOTES
+				);
 
 				if (leaves.length > 0) {
 					leaf = leaves[0];
@@ -90,9 +99,16 @@ export default class DashboardPlugin extends Plugin {
 
 		// Add settings tab
 		this.addSettingTab(new DashboardSettingTab(this.app, this));
+
+		// init fleeting notes manager
+		const fleetingNotesManager = createFleetingNotesManager(this.app);
+		await fleetingNotesManager.initialize();
 	}
 
-	onunload() {}
+	onunload() {
+		const manager = getFleetingNotesManager();
+		manager.destroy();
+	}
 
 	async loadSettings() {
 		this.settings = Object.assign(

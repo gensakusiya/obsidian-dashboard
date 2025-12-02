@@ -56,6 +56,7 @@ function generateNoteId(source: string, text: string): string {
 
 /**
  * Get all tasks from FleetingNotes folder
+ * todo: add Record<fileName, FleetingNote[]> version
  */
 export async function getAllFleetingNotes(app: App): Promise<FleetingNote[]> {
 	const fleetingNotesFolder = app.vault.getAbstractFileByPath(
