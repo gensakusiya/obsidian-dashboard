@@ -92,7 +92,6 @@ export async function getAllFleetingNotes(app: App): Promise<FleetingNote[]> {
 
 /**
  * Get tasks for a specific date (YYYY-MM-DD format)
- * If no tasks for the date, returns tasks from Inbox.md
  */
 export async function getNotesForDate(
 	app: App,
@@ -153,8 +152,8 @@ export async function getNotesFromFile(
 }
 
 /**
- * Add a new fleeting note to Inbox.md
- * Format: - [ ] {title}
+ * Add a new fleeting note
+ * Format: - [ ] {title} [@date]
  */
 export async function addFleetingNote(
 	app: App,
@@ -176,7 +175,7 @@ export async function addFleetingNote(
 		if (!file) {
 			file = await app.vault.create(
 				filePath,
-				`# Inbox\n\n- [ ] ${title}${dateTag}\n `
+				`# Inbox\n\n- [ ] ${title}${dateTag}\n`
 			);
 			console.log("[FleetingNotes] Created new note in Inbox");
 			return true;
@@ -189,9 +188,120 @@ export async function addFleetingNote(
 			: content + `\n- [ ] ${title}${dateTag}\n`;
 
 		await app.vault.modify(file as TFile, newContent);
+		console.log("[FleetingNotes] Note added to Inbox");
 		return true;
 	} catch (error) {
 		console.error("[FleetingNotes] Error adding note:", error);
+		return false;
+	}
+}
+
+/**
+ * Delete a fleeting note from a file
+ * @param app - Obsidian App
+ * @param source - Source file name (e.g. "Inbox", without .md)
+ * @param noteTitle - Exact title of the note to delete
+ */
+export async function deleteFleetingNote(
+	app: App,
+	source: string,
+	noteTitle: string
+): Promise<boolean> {
+	try {
+		const fileName = source.endsWith(".md") ? source : `${source}.md`;
+		const filePath = `${FLEETING_NOTES_FOLDER}/${fileName}`;
+		const file = app.vault.getAbstractFileByPath(filePath);
+
+		if (!file || !(file instanceof TFile)) {
+			console.warn(`[FleetingNotes] File not found: ${filePath}`);
+			return false;
+		}
+
+		let content = await app.vault.read(file);
+		const lines = content.split("\n");
+
+		// Find and remove the line matching the note
+		const newLines = lines.filter((line) => {
+			// Match checkbox lines - [ ]
+			const checkboxMatch = line.match(/^[\s]*-\s*\[\s*\]\s+(.+)$/);
+			if (!checkboxMatch) return true; // Keep non-checkbox lines
+
+			const lineTitle = checkboxMatch[1].trim();
+			// Remove date tags for comparison
+			const cleanTitle = lineTitle.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "").trim();
+			const cleanNoteTitle = noteTitle.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "").trim();
+
+			// Return false to remove this line
+			return cleanTitle !== cleanNoteTitle;
+		});
+
+		const newContent = newLines.join("\n").trim();
+		await app.vault.modify(file, newContent);
+		console.log(`[FleetingNotes] Deleted note: ${noteTitle}`);
+		return true;
+	} catch (error) {
+		console.error("[FleetingNotes] Error deleting note:", error);
+		return false;
+	}
+}
+
+/**
+ * Update a fleeting note
+ * @param app - Obsidian App
+ * @param source - Source file name (e.g. "Inbox", without .md)
+ * @param oldTitle - Current title of the note
+ * @param newTitle - New title
+ * @param newDate - New date (or undefined to remove date)
+ */
+export async function updateFleetingNote(
+	app: App,
+	source: string,
+	oldTitle: string,
+	newTitle: string,
+	newDate?: string
+): Promise<boolean> {
+	try {
+		const fileName = source.endsWith(".md") ? source : `${source}.md`;
+		const filePath = `${FLEETING_NOTES_FOLDER}/${fileName}`;
+		const file = app.vault.getAbstractFileByPath(filePath);
+
+		if (!file || !(file instanceof TFile)) {
+			console.warn(`[FleetingNotes] File not found: ${filePath}`);
+			return false;
+		}
+
+		let content = await app.vault.read(file);
+		const lines = content.split("\n");
+
+		// Find and update the line matching the note
+		const newLines = lines.map((line) => {
+			// Match checkbox lines - [ ]
+			const checkboxMatch = line.match(/^[\s]*-\s*\[\s*\]\s+(.+)$/);
+			if (!checkboxMatch) return line; // Keep non-checkbox lines
+
+			const lineTitle = checkboxMatch[1].trim();
+			const cleanLineTitle = lineTitle
+				.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "")
+				.trim();
+			const cleanOldTitle = oldTitle
+				.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "")
+				.trim();
+
+			// Found the line to update
+			if (cleanLineTitle === cleanOldTitle) {
+				const dateTag = newDate ? ` @${newDate}` : "";
+				return `- [ ] ${newTitle.trim()}${dateTag}`;
+			}
+
+			return line;
+		});
+
+		const newContent = newLines.join("\n");
+		await app.vault.modify(file, newContent);
+		console.log(`[FleetingNotes] Updated note: ${oldTitle} → ${newTitle}`);
+		return true;
+	} catch (error) {
+		console.error("[FleetingNotes] Error updating note:", error);
 		return false;
 	}
 }
