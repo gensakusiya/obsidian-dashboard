@@ -97,38 +97,14 @@ export async function getAllFleetingNotes(app: App): Promise<FleetingNote[]> {
 export async function getAllFleetingNotesGrouped(
 	app: App
 ): Promise<Record<string, FleetingNote[]>> {
-	const fleetingNotesFolder = app.vault.getAbstractFileByPath(
-		FLEETING_NOTES_FOLDER
-	);
-
-	if (!fleetingNotesFolder) {
-		console.warn("[FleetingNotes] FleetingNotes folder not found");
-		return {};
-	}
-
+	const allNotes = await getAllFleetingNotes(app);
 	const grouped: Record<string, FleetingNote[]> = {};
 
-	// Get all markdown files in FleetingNotes folder
-	const files = app.vault
-		.getMarkdownFiles()
-		.filter((file) => file.path.startsWith(`${FLEETING_NOTES_FOLDER}/`));
-
-	for (const file of files) {
-		try {
-			const content = await app.vault.read(file);
-			const tasks = parseNotesFromContent(content, file.name);
-			
-			// Group by source (file name without .md)
-			const source = file.name.replace(".md", "");
-			if (tasks.length > 0) {
-				grouped[source] = tasks;
-			}
-		} catch (error) {
-			console.error(
-				`[FleetingNotes] Error reading file ${file.path}:`,
-				error
-			);
+	for (const note of allNotes) {
+		if (!grouped[note.source]) {
+			grouped[note.source] = [];
 		}
+		grouped[note.source].push(note);
 	}
 
 	return grouped;
