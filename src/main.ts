@@ -30,15 +30,12 @@ export default class DashboardPlugin extends Plugin {
 	settings: DashboardPluginSettings;
 
 	async onload() {
-		// Wait for workspace to be fully loaded
+		const fleetingNotesManager = createFleetingNotesManager(this.app);
+
 		if (!this.app.workspace.layoutReady) {
 			this.app.workspace.onLayoutReady(async () => {
 				initializeVaultStructure(this.app);
 
-				// init fleeting notes manager
-				const fleetingNotesManager = createFleetingNotesManager(
-					this.app
-				);
 				await fleetingNotesManager.initialize();
 			});
 		}

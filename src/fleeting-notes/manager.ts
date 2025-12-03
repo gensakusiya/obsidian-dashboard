@@ -21,7 +21,7 @@ export class FleetingNotesManager {
 	private listeners: Set<() => void> = new Set();
 
 	notes: FleetingNote[] = [];
-	isLoading = false;
+	isLoading = true; // Start with loading state until initialize() is called
 	error: string | null = null;
 
 	constructor(app: App) {

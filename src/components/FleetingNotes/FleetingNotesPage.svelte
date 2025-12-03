@@ -1,13 +1,26 @@
 <script lang="ts">
+	import { onMount, onDestroy } from "svelte";
 	import { getFleetingNotesManager } from "../../fleeting-notes/manager";
 
 	const manager = getFleetingNotesManager();
 
-	let { notes, isLoading, error } = $derived.by(() => ({
-		notes: manager.notes,
-		isLoading: manager.isLoading,
-		error: manager.error,
-	}));
+	let notes = $state(manager.notes);
+	let isLoading = $state(manager.isLoading);
+	let error = $state(manager.error);
+
+	let unsubscribe: (() => void) | null = null;
+
+	onMount(() => {
+		unsubscribe = manager.subscribe(() => {
+			notes = manager.notes;
+			isLoading = manager.isLoading;
+			error = manager.error;
+		});
+	});
+
+	onDestroy(() => {
+		unsubscribe?.();
+	});
 </script>
 
 <div class="fleeting-notes-page">
