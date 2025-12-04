@@ -26,9 +26,13 @@ function parseNotesFromContent(
 		const taskText = taskMatch[1].trim();
 		const date = extractDate(taskText);
 
+		const taskTextWithoutDate = taskText
+			.replace(/@?(\d{4}-\d{2}-\d{2})/, "")
+			.trim();
+
 		tasks.push({
 			id: generateNoteId(sourceFile, taskText),
-			title: taskText,
+			title: taskTextWithoutDate,
 			completed: false,
 			date,
 			source: sourceFile.replace(".md", ""),
@@ -228,8 +232,12 @@ export async function deleteFleetingNote(
 
 			const lineTitle = checkboxMatch[1].trim();
 			// Remove date tags for comparison
-			const cleanTitle = lineTitle.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "").trim();
-			const cleanNoteTitle = noteTitle.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "").trim();
+			const cleanTitle = lineTitle
+				.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "")
+				.trim();
+			const cleanNoteTitle = noteTitle
+				.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "")
+				.trim();
 
 			// Return false to remove this line
 			return cleanTitle !== cleanNoteTitle;
