@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from "svelte";
-	import { getFleetingNotesManager } from "../../fleeting-notes/manager";
+	import { getFleetingNotesManager } from "../../fleeting-notes";
 	import List from "../Atoms/List.svelte";
 	import FleetingNote from "./FleetingNote.svelte";
 
@@ -30,17 +30,20 @@
 		<p>Loading...</p>
 	{:else if error}
 		<p class="error">Error: {error}</p>
-	{:else if notes.length === 0}
+	{:else if Object.keys(notes).length === 0}
 		<p>No fleeting notes found.</p>
 	{:else}
-		<List
-			items={notes}
-			onItemClick={(note) => console.log("Clicked note:", note)}
-		>
-			{#snippet renderItem(note)}
-				<FleetingNote {note} />
-			{/snippet}
-		</List>
+		{#each Object.entries(notes) as [groupName, notesInGroup]}
+			<h2>{groupName}</h2>
+			<List
+				items={notesInGroup}
+				onItemClick={(note) => console.log("Clicked note:", note)}
+			>
+				{#snippet renderItem(note)}
+					<FleetingNote {note} />
+				{/snippet}
+			</List>
+		{/each}
 	{/if}
 </div>
 

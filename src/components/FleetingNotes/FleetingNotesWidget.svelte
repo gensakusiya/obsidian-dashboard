@@ -1,35 +1,46 @@
 <script lang="ts">
 	import type { App } from "obsidian";
+	import { onMount, onDestroy } from "svelte";
 	import type { FleetingNote } from "../../types/fleeting-note";
 	import { selectedDate } from "../../stores/store";
-	import { getNotesForDate } from "../../fleeting-notes";
 	import { formatDate } from "../../utils/date";
+	import type { FleetingNotesManager } from "../../fleeting-notes";
+	import { VIEW_TYPE_FLEETING_NOTES } from "../../views/fleeting-notes";
 	import Island from "../Island/Island.svelte";
 	import IslandHeader from "../Island/IslandHeader.svelte";
 
-	export let app: App;
-
-	let tasks: FleetingNote[] = [];
-	let loading = true;
-	let error: string | null = null;
-
-	// Reactive statement to reload tasks when selectedDate changes
-	$: if ($selectedDate) {
-		loadNotes($selectedDate);
+	interface FleetingNotesWidgetProps {
+		manager: FleetingNotesManager;
+		app: App;
 	}
 
-	async function loadNotes(date: Date) {
-		loading = true;
-		error = null;
-		try {
-			tasks = await getNotesForDate(app, date);
-		} catch (e) {
-			console.error("Failed to load notes:", e);
-			error = "Failed to load notes";
-			tasks = [];
-		} finally {
-			loading = false;
-		}
+	let { manager, app }: FleetingNotesWidgetProps = $props();
+
+	let notes: FleetingNote[] = $state(manager.notes[manager.inboxGroup] || []);
+	let isLoading = $state(manager.isLoading);
+	let error = $state(manager.error);
+
+	let unsubscribe: (() => void) | null = null;
+
+	onMount(() => {
+		unsubscribe = manager.subscribe(() => {
+			notes = updateNotesForDate($selectedDate);
+			isLoading = manager.isLoading;
+			error = manager.error;
+		});
+	});
+
+	$effect(() => {
+		const date = $selectedDate;
+		notes = updateNotesForDate(date);
+	});
+
+	onDestroy(() => {
+		unsubscribe?.();
+	});
+
+	function updateNotesForDate(date: Date): FleetingNote[] {
+		return manager.getNotesForDate(date)[manager.inboxGroup] || [];
 	}
 
 	function handleTaskClick(task: FleetingNote) {
@@ -38,9 +49,8 @@
 	}
 
 	async function handleOpenAllNotes() {
-		// Open or reveal the Fleeting Notes view
 		await app.workspace.getLeaf(false).setViewState({
-			type: "fleeting-notes-view",
+			type: VIEW_TYPE_FLEETING_NOTES,
 			active: true,
 		});
 	}
@@ -56,11 +66,11 @@
 		/>
 	{/snippet}
 
-	{#if loading}
+	{#if isLoading}
 		<div class="panel-loading">Loading notes...</div>
 	{:else if error}
 		<div class="panel-error">{error}</div>
-	{:else if tasks.length === 0}
+	{:else if notes.length === 0}
 		<div class="panel-empty">
 			<p>No notes for this date</p>
 			<span class="empty-hint">
@@ -69,17 +79,17 @@
 		</div>
 	{:else}
 		<div class="fleeting-notes">
-			{#each tasks as task (task.id)}
+			{#each notes as note (note.id)}
 				<button
 					class="fleeting-note"
-					on:click={() => handleTaskClick(task)}
+					onclick={() => handleTaskClick(note)}
 				>
 					<div class="note-checkbox">
 						<input type="checkbox" disabled />
 					</div>
 					<div class="note-content">
-						<span class="note-title">{task.title}</span>
-						<span class="note-source">{task.source}</span>
+						<span class="note-title">{note.title}</span>
+						<span class="note-source">{note.source}</span>
 					</div>
 				</button>
 			{/each}

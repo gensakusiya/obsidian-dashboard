@@ -5,23 +5,37 @@
 	import ProjectsWidget from "./Projects/ProjectsWidget.svelte";
 
 	import NewFleetingNoteDialog from "./FleetingNotes/NewFleetingNoteDialog.svelte";
+	import { getFleetingNotesManager } from "../fleeting-notes";
 
 	export let app;
 
 	let dialogElement: HTMLDialogElement;
+	const fleetingNotesManager = getFleetingNotesManager();
 
 	function openQuickAdd() {
 		dialogElement.showModal();
+	}
+
+	function handleCreateNewNote(title: string, date?: Date) {
+		fleetingNotesManager.createNote(title, date);
 	}
 </script>
 
 <Layout>
 	<CalendarWidget slot="calendar" />
-	<FleetingNotesPanel slot="fleeting-notes" {app} />
+	<FleetingNotesPanel
+		slot="fleeting-notes"
+		manager={fleetingNotesManager}
+		{app}
+	/>
 	<ProjectsWidget slot="projects" {app} />
 </Layout>
 
-<NewFleetingNoteDialog bind:dialog={dialogElement} {app} />
+<NewFleetingNoteDialog
+	bind:dialog={dialogElement}
+	{app}
+	onCreate={handleCreateNewNote}
+/>
 
 <!-- Floating Action Button -->
 <button class="fab" on:click={openQuickAdd} aria-label="Quick add note">

@@ -1,8 +1,6 @@
 <script lang="ts">
 	import type { App } from "obsidian";
 
-	import { addFleetingNote } from "../../fleeting-notes";
-	import { formatDateToFleetingNote } from "../../utils/date";
 	import Button from "../Atoms/Button.svelte";
 	import Dialog from "../Atoms/Dialog.svelte";
 	import Toolbox from "../Atoms/Toolbox.svelte";
@@ -12,9 +10,14 @@
 	interface DialogProps {
 		app: App;
 		dialog: HTMLDialogElement;
+		onCreate: (title: string, date?: Date) => void;
 	}
 
-	let { dialog = $bindable(), app = $bindable() }: DialogProps = $props();
+	let {
+		dialog = $bindable(),
+		app = $bindable(),
+		onCreate,
+	}: DialogProps = $props();
 	let note: string = $state("");
 	let date: Date | undefined = $state(undefined);
 
@@ -27,11 +30,7 @@
 	}
 
 	function handleNoteAdded() {
-		const dateStr = date ? formatDateToFleetingNote(date) : "";
-		addFleetingNote(app, {
-			title: note,
-			date: dateStr,
-		});
+		onCreate(note, date);
 		closeDialog();
 	}
 </script>

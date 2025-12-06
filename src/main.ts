@@ -14,7 +14,7 @@ import { initializeVaultStructure } from "./utils/initialization";
 import {
 	createFleetingNotesManager,
 	getFleetingNotesManager,
-} from "./fleeting-notes/manager";
+} from "./fleeting-notes";
 
 interface DashboardPluginSettings {
 	mode: string;
