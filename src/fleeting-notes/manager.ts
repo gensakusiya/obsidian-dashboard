@@ -1,7 +1,9 @@
 import { type App, TAbstractFile } from "obsidian";
+
 import type { FleetingNote } from "../types/fleeting-note";
-import { getAllFleetingNotes } from "./index";
-import { FLEETING_NOTES_FOLDER } from "./consts";
+import { isSameDate, formatDateToDefault } from "../utils/date";
+import { getAllFleetingNotes, addFleetingNote } from "./parser";
+import { FLEETING_NOTES_DEFAULT_FILE, FLEETING_NOTES_FOLDER } from "./consts";
 
 /**
  * FleetingNotesManager - Singleton manager for fleeting notes
@@ -20,9 +22,10 @@ export class FleetingNotesManager {
 	private unsubscribers: Array<() => void> = [];
 	private listeners: Set<() => void> = new Set();
 
-	notes: FleetingNote[] = [];
+	notes: Record<string, FleetingNote[]> = {};
 	isLoading = true; // Start with loading state until initialize() is called
 	error: string | null = null;
+	inboxGroup = FLEETING_NOTES_DEFAULT_FILE;
 
 	constructor(app: App) {
 		this.app = app;
@@ -103,40 +106,53 @@ export class FleetingNotesManager {
 		return () => this.listeners.delete(callback);
 	}
 
-	getFilteredNotes(options?: {
-		source?: string;
+	filterNotes(options?: {
 		searchText?: string;
-	}): FleetingNote[] {
+		date?: Date;
+	}): Record<string, FleetingNote[]> {
 		let filtered = this.notes;
 
-		if (options?.source) {
-			filtered = filtered.filter((n) => n.source === options.source);
-		}
+		const filterText = options?.searchText?.toLowerCase();
+		const filterDate = options?.date;
 
-		if (options?.searchText) {
-			const search = options.searchText.toLowerCase();
-			filtered = filtered.filter((n) =>
-				n.title.toLowerCase().includes(search)
+		if (filterText || filterDate) {
+			filtered = Object.fromEntries(
+				Object.entries(filtered).map(([source, notes]) => [
+					source,
+					notes.filter((n) => {
+						let result = true;
+
+						if (filterText) {
+							result = n.title.toLowerCase().includes(filterText);
+						}
+						if (filterDate) {
+							result =
+								result &&
+								(n.date
+									? isSameDate(n.date, filterDate)
+									: false);
+						}
+
+						return result;
+					}),
+				])
 			);
 		}
 
 		return filtered;
 	}
 
-	/**
-	 * Get notes grouped by source file
-	 */
-	getGroupedBySource(): Record<string, FleetingNote[]> {
-		const grouped: Record<string, FleetingNote[]> = {};
+	getNotesForDate(date: Date): Record<string, FleetingNote[]> {
+		return this.filterNotes({ date });
+	}
 
-		for (const note of this.notes) {
-			if (!grouped[note.source]) {
-				grouped[note.source] = [];
-			}
-			grouped[note.source].push(note);
-		}
+	addNote(note: Partial<FleetingNote>) {
+		addFleetingNote(this.app, note);
+	}
 
-		return grouped;
+	createNote(title: string, date?: Date) {
+		const dateStr = date ? formatDateToDefault(date) : undefined;
+		this.addNote({ title, date: dateStr });
 	}
 
 	/**
