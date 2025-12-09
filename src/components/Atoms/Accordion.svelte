@@ -55,9 +55,9 @@
 
 		display: flex;
 		flex-direction: column;
-		flex: 0 0 auto;
 		border-radius: var(--radius-s);
 		background: var(--background-secondary);
+		height: fit-content;
 	}
 
 	.accordion.open {
@@ -72,7 +72,7 @@
 		gap: var(--size-4-2);
 		padding: var(--size-4-2) var(--size-4-3);
 		color: var(--text-normal);
-		font-size: var(--font-ui-small);
+		font-size: var(--font-ui-medium);
 		font-family: inherit;
 		cursor: var(--cursor);
 		border-radius: var(--radius-s);
@@ -108,5 +108,9 @@
 		height: var(--accordion-content-height);
 		transition: height 0.25s;
 		overflow: clip;
+	}
+
+	.accordion.open .accordion-content {
+		padding: var(--size-4-2) 0;
 	}
 </style>
