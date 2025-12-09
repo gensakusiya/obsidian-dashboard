@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { setIcon } from "obsidian";
 	import type { Snippet } from "svelte";
+	import { onMount } from "svelte";
 
 	interface AccordionProps {
 		title: string;
@@ -15,67 +17,96 @@
 		children,
 	}: AccordionProps = $props();
 
-	function toggle() {
+	let iconEl: HTMLDivElement | undefined;
+
+	onMount(() => {
+		if (iconEl) {
+			setIcon(iconEl, "chevron-right");
+		}
+	});
+
+	function handleToggle() {
 		isOpen = !isOpen;
+	}
+
+	function handleKeydown() {
+		// toggle();
 	}
 </script>
 
-<div class="accordion {className}">
-	<button class="accordion-header" onclick={toggle} aria-expanded={isOpen}>
-		<span class="accordion-icon" class:open={isOpen}>▶</span>
-		<span class="accordion-title">{title}</span>
+<div class="accordion {className}" class:open={isOpen}>
+	<button
+		class="header"
+		aria-expanded={isOpen}
+		onclick={handleToggle}
+		onkeydown={handleKeydown}
+	>
+		<div class="icon-container" bind:this={iconEl}></div>
+		<div class="title">{title}</div>
 	</button>
-	{#if isOpen}
-		<div class="accordion-content">
-			{@render children?.()}
-		</div>
-	{/if}
+	<div class="accordion-content" aria-hidden={!isOpen}>
+		{@render children?.()}
+	</div>
 </div>
 
 <style>
 	.accordion {
+		--accordion-content-height: 0px;
+
+		display: flex;
+		flex-direction: column;
+		flex: 0 0 auto;
 		border-radius: var(--radius-s);
+		background: var(--background-secondary);
 	}
 
-	.accordion-header {
-		width: 100%;
+	.accordion.open {
+		--accordion-content-height: auto;
+	}
+
+	.header {
+		all: unset;
+
 		display: flex;
 		align-items: center;
 		gap: var(--size-4-2);
 		padding: var(--size-4-2) var(--size-4-3);
-		background: transparent;
-		border: none;
 		color: var(--text-normal);
 		font-size: var(--font-ui-small);
 		font-family: inherit;
 		cursor: var(--cursor);
-		user-select: none;
-		text-align: left;
 		border-radius: var(--radius-s);
 		transition: background-color var(--anim-duration-fast) ease-in-out;
 	}
 
-	.accordion-header:hover {
+	.header:hover {
 		background-color: var(--background-modifier-hover);
 	}
 
-	.accordion-icon {
-		display: inline-block;
-		transition: transform var(--anim-duration-fast) ease-in-out;
-		font-size: 0.75em;
-		color: var(--text-muted);
+	.icon-container {
+		width: var(--size-4-4);
+		height: var(--size-4-4);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: var(--icon-opacity);
+		color: var(--icon-color);
+		flex: 0 0 auto;
+
+		transition: transform 100ms ease-in-out;
 	}
 
-	.accordion-icon.open {
+	.accordion.open .icon-container {
 		transform: rotate(90deg);
 	}
 
-	.accordion-title {
+	.title {
 		font-weight: var(--font-weight-medium);
 	}
 
 	.accordion-content {
-		padding: var(--size-4-2) var(--size-4-3);
-		padding-top: 0;
+		height: var(--accordion-content-height);
+		transition: height 0.25s;
+		overflow: clip;
 	}
 </style>
