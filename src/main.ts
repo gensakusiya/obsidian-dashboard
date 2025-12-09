@@ -15,6 +15,7 @@ import {
 	createFleetingNotesManager,
 	getFleetingNotesManager,
 } from "./fleeting-notes";
+import { ConfigManager, createConfigManager } from "./config";
 
 interface DashboardPluginSettings {
 	mode: string;
@@ -27,9 +28,10 @@ const DEFAULT_SETTINGS: DashboardPluginSettings = {
 const VIEW_TYPE_DASHBOARD = "dashboard-view";
 
 export default class DashboardPlugin extends Plugin {
-	settings: DashboardPluginSettings;
+	configManager: ConfigManager;
 
 	async onload() {
+		this.configManager = createConfigManager(this);
 		const fleetingNotesManager = createFleetingNotesManager(this.app);
 
 		if (!this.app.workspace.layoutReady) {
@@ -110,15 +112,11 @@ export default class DashboardPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			await this.loadData()
-		);
+		await this.configManager.load();
 	}
 
 	async saveSettings() {
-		await this.saveData(this.settings);
+		await this.configManager.save();
 	}
 }
 
@@ -135,15 +133,21 @@ class DashboardSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
+		const settings = this.plugin.configManager.getConfig();
+
 		new Setting(containerEl)
-			.setName("Setting #1")
-			.setDesc("It's a secret")
+			.setName("FleetingNotes order")
+			.setDesc("Customize the order of FleetingNotes groups.")
 			.addText((text) =>
 				text
-					.setPlaceholder("Enter your secret")
-					.setValue(this.plugin.settings.mode)
+					.setPlaceholder("e.g. Inbox, Ideas, Tasks")
+					.setValue(settings.fleetingNotes.groupOrder.join(", "))
 					.onChange(async (value) => {
-						this.plugin.settings.mode = value;
+						const groups = value.split(",").map((s) => s.trim());
+						await this.plugin.configManager.setFleetingNotesGroupOrder(
+							groups
+						);
+
 						await this.plugin.saveSettings();
 					})
 			);
