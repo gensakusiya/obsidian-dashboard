@@ -10,18 +10,16 @@
 
 <div class="fleeting-note">
 	<span class="title">{note.title}</span>
-	<span class="date">{note.date}</span>
-	<small>Source: {note.source}</small>
+	{#if note.date}
+		<span class="date">{note.date}</span>
+	{/if}
 </div>
 
 <style>
 	.fleeting-note {
 		display: flex;
 		flex-direction: column;
-		padding: var(--size-2);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-1);
-		background-color: var(--color-background-secondary);
+		gap: var(--size-2-2);
 	}
 
 	.title {
@@ -35,7 +33,6 @@
 	.date {
 		color: var(--text-muted);
 		font-size: var(--font-ui-smaller);
-		padding-top: var(--size-4-1);
 		line-height: var(--line-height-tight);
 	}
 </style>
