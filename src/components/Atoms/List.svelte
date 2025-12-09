@@ -1,9 +1,11 @@
 <script lang="ts" generics="T = unknown">
 	import type { Snippet } from "svelte";
+	import type { ClassValue } from "svelte/elements";
 	import ListItem from "./ListItem.svelte";
 
 	interface ListProps<T = unknown> {
-		className?: string;
+		className?: ClassValue | undefined | null;
+		itemClassName?: ClassValue | undefined | null;
 		items: T[];
 		onItemClick?: (item: T) => void;
 		renderItem?: Snippet<[T]>;
@@ -11,6 +13,7 @@
 
 	let {
 		className = "",
+		itemClassName = "",
 		items,
 		onItemClick,
 		renderItem,
@@ -19,7 +22,7 @@
 
 <ul class="list {className}" role="listbox">
 	{#each items as item}
-		<ListItem {item} onClick={onItemClick}>
+		<ListItem {item} onClick={onItemClick} className={itemClassName}>
 			{#snippet children(passedItem)}
 				{#if renderItem}
 					{@render renderItem(passedItem)}

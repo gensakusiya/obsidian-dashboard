@@ -1,9 +1,10 @@
 <script lang="ts" generics="T = unknown">
 	import type { Snippet } from "svelte";
+	import type { ClassValue } from "svelte/elements";
 
 	interface ListItemProps<T = unknown> {
 		item: T;
-		className?: string;
+		className?: ClassValue | undefined | null;
 		onClick?: (item: T) => void;
 		children?: Snippet<[T]>;
 	}
