@@ -8,6 +8,7 @@
 		isOpen?: boolean;
 		className?: string;
 		children?: Snippet;
+		actions?: Snippet;
 	}
 
 	let {
@@ -15,6 +16,7 @@
 		isOpen = $bindable(false),
 		className = "",
 		children,
+		actions,
 	}: AccordionProps = $props();
 
 	let iconEl: HTMLDivElement | undefined;
@@ -35,15 +37,23 @@
 </script>
 
 <div class="accordion {className}" class:open={isOpen}>
-	<button
-		class="header"
-		aria-expanded={isOpen}
-		onclick={handleToggle}
-		onkeydown={handleKeydown}
-	>
-		<div class="icon-container" bind:this={iconEl}></div>
-		<div class="title">{title}</div>
-	</button>
+	<div class="header" class:has-actions={actions}>
+		<button
+			class="toggler"
+			aria-expanded={isOpen}
+			onclick={handleToggle}
+			onkeydown={handleKeydown}
+		>
+			<div class="icon-container" bind:this={iconEl}></div>
+			<div class="title">{title}</div>
+		</button>
+		{#if actions}
+			<div class="actions">
+				{@render actions?.()}
+			</div>
+		{/if}
+	</div>
+
 	<div class="accordion-content" aria-hidden={!isOpen}>
 		{@render children?.()}
 	</div>
@@ -65,6 +75,15 @@
 	}
 
 	.header {
+		display: grid;
+		align-items: center;
+
+		grid-template-columns: 1fr auto;
+	}
+
+	.toggler {
+		--toggler-radius: var(--radius-s);
+
 		all: unset;
 
 		display: flex;
@@ -75,11 +94,11 @@
 		font-size: var(--font-ui-medium);
 		font-family: inherit;
 		cursor: var(--cursor);
-		border-radius: var(--radius-s);
+		border-radius: var(--toggler-radius);
 		transition: background-color var(--anim-duration-fast) ease-in-out;
 	}
 
-	.header:hover {
+	.toggler:hover {
 		background-color: var(--background-modifier-hover);
 	}
 
@@ -98,6 +117,14 @@
 
 	.accordion.open .icon-container {
 		transform: rotate(90deg);
+	}
+
+	.accordion.open .header:not(.has-actions) .toggler {
+		--toggler-radius: var(--radius-s) var(--radius-s) 0 0;
+	}
+
+	.accordion.open .header.has-actions .toggler {
+		--toggler-radius: var(--radius-s) 0 0 0;
 	}
 
 	.title {
