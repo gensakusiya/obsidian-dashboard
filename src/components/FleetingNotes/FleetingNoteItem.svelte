@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { FleetingNote } from "../../types/fleeting-note";
+	import Checkbox from "../Atoms/Checkbox.svelte";
 
 	interface FleetingNoteProps {
 		note: FleetingNote;
@@ -9,7 +10,12 @@
 </script>
 
 <div class="fleeting-note">
-	<span class="title">{note.title}</span>
+	<Checkbox
+		checked={note.completed}
+		onChange={(checked) => (note.completed = checked)}
+	>
+		<span class="title">{note.title}</span>
+	</Checkbox>
 	{#if note.date}
 		<span class="date">{note.date}</span>
 	{/if}
@@ -34,5 +40,6 @@
 		color: var(--text-muted);
 		font-size: var(--font-ui-smaller);
 		line-height: var(--line-height-tight);
+		margin-left: var(--size-4-8);
 	}
 </style>
