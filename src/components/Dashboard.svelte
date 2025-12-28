@@ -37,7 +37,7 @@
 	onCreate={handleCreateNewNote}
 />
 
-<!-- Floating Action Button -->
+<!-- Temp: Floating Action Button -->
 <button class="fab" on:click={openQuickAdd} aria-label="Quick add note">
 	<svg
 		xmlns="http://www.w3.org/2000/svg"
