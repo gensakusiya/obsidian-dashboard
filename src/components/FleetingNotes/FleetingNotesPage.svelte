@@ -6,6 +6,7 @@
 
 	import List from "../Atoms/List.svelte";
 	import Accordion from "../Atoms/Accordion.svelte";
+	import AddIcon from "../Atoms/AddIcon.svelte";
 	import FleetingNoteItem from "./FleetingNoteItem.svelte";
 
 	const manager = getFleetingNotesManager();
@@ -56,6 +57,11 @@
 		unsubscribe?.();
 		configUnsubscribe?.();
 	});
+
+	function handlerAddNote(groupName: string) {
+		//  manager.addNote(groupName);
+		console.log("Add note to group:", groupName);
+	}
 </script>
 
 <div class="fleeting-notes-page">
@@ -69,6 +75,14 @@
 		<div class="fleeting-notes-groups">
 			{#each Object.entries(grouped) as [groupName, notesInGroup]}
 				<Accordion title={groupName} isOpen={true}>
+					{#snippet actions()}
+						<AddIcon
+							ariaLabel="Add note"
+							title="Add note"
+							onClick={() => handlerAddNote(groupName)}
+						></AddIcon>
+					{/snippet}
+
 					<List
 						items={notesInGroup}
 						itemClassName="fleeting-notes-li"
@@ -87,7 +101,7 @@
 
 <style>
 	.fleeting-notes-page :global(.fleeting-notes-li) {
-		padding-left: var(--size-4-8);
+		padding-left: var(--size-4-3);
 	}
 
 	.fleeting-notes-groups {
