@@ -6,6 +6,8 @@ export const DEFAULT_CONFIG: DashboardConfig = {
 		groupOrder: ["Inbox"],
 		sortAlphabetically: true,
 		expandedGroups: ["Inbox"],
+		mainFile: "Inbox",
+		groups: [],
 	},
 	projects: {
 		sortBy: "name",
