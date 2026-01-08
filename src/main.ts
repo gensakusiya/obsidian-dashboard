@@ -16,6 +16,10 @@ import {
 	getFleetingNotesManager,
 } from "./fleeting-notes";
 import { ConfigManager, createConfigManager } from "./config";
+import {
+	initFleetingNotesStore,
+	destroyFleetingNotesStore,
+} from "./stores/fleeting-notes-store";
 
 interface DashboardPluginSettings {
 	mode: string;
@@ -39,6 +43,8 @@ export default class DashboardPlugin extends Plugin {
 				initializeVaultStructure(this.app);
 
 				await fleetingNotesManager.initialize();
+
+				initFleetingNotesStore();
 			});
 		}
 
@@ -109,6 +115,8 @@ export default class DashboardPlugin extends Plugin {
 	onunload() {
 		const manager = getFleetingNotesManager();
 		manager.destroy();
+
+		destroyFleetingNotesStore();
 	}
 
 	async loadSettings() {
