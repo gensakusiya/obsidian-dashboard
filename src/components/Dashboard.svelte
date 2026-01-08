@@ -23,11 +23,7 @@
 
 <Layout>
 	<CalendarWidget slot="calendar" />
-	<FleetingNotesPanel
-		slot="fleeting-notes"
-		manager={fleetingNotesManager}
-		{app}
-	/>
+	<FleetingNotesPanel slot="fleeting-notes" {app} />
 	<ProjectsWidget slot="projects" {app} />
 </Layout>
 
