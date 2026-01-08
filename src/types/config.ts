@@ -1,6 +1,10 @@
 export interface DashboardConfig {
 	// FleetingNotes page settings
 	fleetingNotes: {
+		/** Name of the default file */
+		mainFile: "Inbox" | string;
+		/** Defined groups with their colors */
+		groups: { name: string; color: string }[];
 		/** Order of groups (Inbox first, then alphabetically) */
 		groupOrder: string[];
 		/** Auto-sort other groups alphabetically */
