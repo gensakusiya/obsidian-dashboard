@@ -1,47 +1,25 @@
 <script lang="ts">
 	import type { App } from "obsidian";
-	import { onMount, onDestroy } from "svelte";
 	import type { FleetingNote } from "../../types/fleeting-note";
 	import { selectedDate } from "../../stores/store";
+	import {
+		fleetingNotesStore,
+		inboxNotesOnDate,
+	} from "../../stores/fleeting-notes-store";
 	import { formatDate } from "../../utils/date";
-	import type { FleetingNotesManager } from "../../fleeting-notes";
 	import { VIEW_TYPE_FLEETING_NOTES } from "../../views/fleeting-notes";
 	import Island from "../Island/Island.svelte";
 	import IslandHeader from "../Island/IslandHeader.svelte";
 
 	interface FleetingNotesWidgetProps {
-		manager: FleetingNotesManager;
 		app: App;
 	}
 
-	let { manager, app }: FleetingNotesWidgetProps = $props();
+	let { app }: FleetingNotesWidgetProps = $props();
 
-	let notes: FleetingNote[] = $state(manager.notes[manager.inboxGroup] || []);
-	let isLoading = $state(manager.isLoading);
-	let error = $state(manager.error);
-
-	let unsubscribe: (() => void) | null = null;
-
-	onMount(() => {
-		unsubscribe = manager.subscribe(() => {
-			notes = updateNotesForDate($selectedDate);
-			isLoading = manager.isLoading;
-			error = manager.error;
-		});
-	});
-
-	$effect(() => {
-		const date = $selectedDate;
-		notes = updateNotesForDate(date);
-	});
-
-	onDestroy(() => {
-		unsubscribe?.();
-	});
-
-	function updateNotesForDate(date: Date): FleetingNote[] {
-		return manager.getNotesForDate(date)[manager.inboxGroup] || [];
-	}
+	const isLoading = $derived($fleetingNotesStore.isLoading);
+	const error: string | null = $derived($fleetingNotesStore.error);
+	const notes: FleetingNote[] = $derived($inboxNotesOnDate);
 
 	function handleTaskClick(task: FleetingNote) {
 		// Future: Open note file or edit note
