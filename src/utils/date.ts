@@ -1,4 +1,4 @@
-import { format, parse, isEqual } from "date-fns";
+import { format, parse, isSameDay } from "date-fns";
 import { DEFAULT_DATE_FORMAT } from "src/consts";
 
 export function formatDate(date: Date): string {
@@ -29,7 +29,7 @@ export function isSameDate(
 			? parseFromString(secondDate)
 			: secondDate;
 
-	return isEqual(lDate, rDate);
+	return isSameDay(lDate, rDate);
 }
 
 export function parseFromString(
