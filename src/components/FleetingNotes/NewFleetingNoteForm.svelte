@@ -9,13 +9,21 @@
 	import { DatePreset } from "../../fleeting-notes/consts";
 	import { formatDateToDisplay } from "../../utils/date";
 	import CrossIcon from "../Atoms/CrossIcon.svelte";
+	import Select from "../Atoms/Select.svelte";
 
 	interface FormProps {
 		note: string;
+		fleetingNoteGroup: string[];
+		fleetingNoteGroupValue?: string;
 		date?: Date;
 	}
 
-	let { note = $bindable(), date = $bindable() }: FormProps = $props();
+	let {
+		note = $bindable(),
+		fleetingNoteGroup = $bindable(),
+		fleetingNoteGroupValue = $bindable(),
+		date = $bindable(),
+	}: FormProps = $props();
 	let currentDate = new Date();
 	let datePickerEl: HTMLButtonElement | undefined = $state();
 	let isDatePickerOpen = $state(false);
@@ -88,6 +96,15 @@
 	placeholder="Type something..."
 	ariaLabel="Quick add input"
 	bind:value={note}
+/>
+
+<Select
+	options={fleetingNoteGroup.map((group) => ({
+		value: group,
+		label: group,
+	}))}
+	bind:value={fleetingNoteGroupValue}
+	ariaLabel="Fleeting note group select"
 />
 
 <div class="date-display">

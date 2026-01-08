@@ -20,6 +20,8 @@
 	}: DialogProps = $props();
 	let note: string = $state("");
 	let date: Date | undefined = $state(undefined);
+	let fleetingNoteGroup: string[] = $state([]);
+	let fleetingNoteGroupValue: string = $state("1");
 
 	function closeDialog() {
 		if (dialog.open) {
@@ -37,7 +39,12 @@
 
 <Dialog bind:dialog onClose={closeDialog} title="Quick Add Note">
 	<Form>
-		<NewFleetingNoteForm bind:note bind:date />
+		<NewFleetingNoteForm
+			bind:note
+			bind:date
+			bind:fleetingNoteGroup
+			bind:fleetingNoteGroupValue
+		/>
 	</Form>
 
 	{#snippet footer()}
