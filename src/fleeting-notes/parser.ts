@@ -3,6 +3,8 @@ import type { FleetingNote } from "../types/fleeting-note";
 import { simpleHash } from "../utils/hash";
 import { FLEETING_NOTES_DEFAULT_FILE, FLEETING_NOTES_FOLDER } from "./consts";
 
+const DATE_REGEX = /@?(\d{4}-\d{2}-\d{2})/;
+
 /**
  * Parse a markdown file and extract uncompleted tasks only
  */
@@ -21,9 +23,7 @@ function parseNotesFromContent(
 		const taskText = taskMatch[1].trim();
 		const date = extractDate(taskText);
 
-		const taskTextWithoutDate = taskText
-			.replace(/@?(\d{4}-\d{2}-\d{2})/, "")
-			.trim();
+		const taskTextWithoutDate = taskText.replace(DATE_REGEX, "").trim();
 
 		tasks.push({
 			id: generateNoteId(sourceFile, taskText),
@@ -41,7 +41,7 @@ function parseNotesFromContent(
  * Extract date from task text in format YYYY-MM-DD or @YYYY-MM-DD
  */
 function extractDate(text: string): string | undefined {
-	const dateMatch = text.match(/@?(\d{4}-\d{2}-\d{2})/);
+	const dateMatch = text.match(DATE_REGEX);
 	return dateMatch ? dateMatch[1] : undefined;
 }
 
@@ -196,12 +196,8 @@ export async function deleteFleetingNote(
 
 			const lineTitle = checkboxMatch[1].trim();
 			// Remove date tags for comparison
-			const cleanTitle = lineTitle
-				.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "")
-				.trim();
-			const cleanNoteTitle = noteTitle
-				.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "")
-				.trim();
+			const cleanTitle = lineTitle.replace(DATE_REGEX, "").trim();
+			const cleanNoteTitle = noteTitle.replace(DATE_REGEX, "").trim();
 
 			// Return false to remove this line
 			return cleanTitle !== cleanNoteTitle;
@@ -252,12 +248,8 @@ export async function updateFleetingNote(
 			if (!checkboxMatch) return line; // Keep non-checkbox lines
 
 			const lineTitle = checkboxMatch[1].trim();
-			const cleanLineTitle = lineTitle
-				.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "")
-				.trim();
-			const cleanOldTitle = oldNote.title
-				.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "")
-				.trim();
+			const cleanLineTitle = lineTitle.replace(DATE_REGEX, "").trim();
+			const cleanOldTitle = oldNote.title.replace(DATE_REGEX, "").trim();
 
 			// Found the line to update
 			if (cleanLineTitle === cleanOldTitle) {
