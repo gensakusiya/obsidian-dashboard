@@ -1,11 +1,14 @@
 <script lang="ts">
 	import type { App } from "obsidian";
 
+	import type { FleetingNote } from "../../types/fleeting-note";
+	import { getFleetingNotesManager } from "../../fleeting-notes/manager";
+	import { fleetingNotesStore } from "../../stores/fleeting-notes-store";
+
 	import List from "../Atoms/List.svelte";
 	import Accordion from "../Atoms/Accordion.svelte";
 	import AddIcon from "../Atoms/AddIcon.svelte";
 	import FleetingNoteItem from "./FleetingNoteItem.svelte";
-	import { fleetingNotesStore } from "../../stores/fleeting-notes-store";
 	import NewFleetingNoteDialog from "./NewFleetingNoteDialog.svelte";
 
 	interface FleetingNotesPageProps {
@@ -13,6 +16,7 @@
 	}
 
 	let { app }: FleetingNotesPageProps = $props();
+	const fleetingNotesManager = getFleetingNotesManager();
 
 	let dialogElement: HTMLDialogElement = $state(
 		document.createElement("dialog"),
@@ -26,6 +30,13 @@
 	function handlerAddNote(groupName: string) {
 		addToGroup = groupName;
 		dialogElement?.showModal();
+	}
+
+	function handleCompleteNote(note: FleetingNote) {
+		const updatedNote: Partial<FleetingNote> = {
+			completed: !note.completed,
+		};
+		fleetingNotesManager.updateFleetingNote(note, updatedNote);
 	}
 </script>
 
@@ -51,8 +62,7 @@
 					<List
 						items={notesInGroup}
 						itemClassName="fleeting-notes-li"
-						onItemClick={(note) =>
-							console.log("Clicked note:", note)}
+						onItemClick={handleCompleteNote}
 					>
 						{#snippet renderItem(note)}
 							<FleetingNoteItem {note} />

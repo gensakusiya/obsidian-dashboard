@@ -2,7 +2,11 @@ import { type App, TAbstractFile } from "obsidian";
 
 import type { FleetingNote } from "../types/fleeting-note";
 import { isSameDate, formatDateToDefault } from "../utils/date";
-import { getAllFleetingNotes, addFleetingNote } from "./parser";
+import {
+	getAllFleetingNotes,
+	addFleetingNote,
+	updateFleetingNote,
+} from "./parser";
 import { FLEETING_NOTES_DEFAULT_FILE, FLEETING_NOTES_FOLDER } from "./consts";
 
 /**
@@ -148,6 +152,14 @@ export class FleetingNotesManager {
 
 	addNote(note: Partial<FleetingNote>) {
 		addFleetingNote(this.app, note);
+	}
+
+	updateFleetingNote(
+		oldNote: FleetingNote,
+		updatedFields: Partial<FleetingNote>
+	) {
+		const newNote: FleetingNote = { ...oldNote, ...updatedFields };
+		updateFleetingNote(this.app, oldNote, newNote);
 	}
 
 	createNote(title: string, group: string, date?: Date) {

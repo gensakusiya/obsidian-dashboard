@@ -227,13 +227,13 @@ export async function deleteFleetingNote(
  */
 export async function updateFleetingNote(
 	app: App,
-	source: string,
-	oldTitle: string,
-	newTitle: string,
-	newDate?: string
+	oldNote: FleetingNote,
+	newNote: Partial<FleetingNote>
 ): Promise<boolean> {
 	try {
-		const fileName = source.endsWith(".md") ? source : `${source}.md`;
+		const fileName = oldNote.source.endsWith(".md")
+			? oldNote.source
+			: `${oldNote.source}.md`;
 		const filePath = `${FLEETING_NOTES_FOLDER}/${fileName}`;
 		const file = app.vault.getAbstractFileByPath(filePath);
 
@@ -255,14 +255,15 @@ export async function updateFleetingNote(
 			const cleanLineTitle = lineTitle
 				.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "")
 				.trim();
-			const cleanOldTitle = oldTitle
+			const cleanOldTitle = oldNote.title
 				.replace(/@\{\d{4}-\d{2}-\d{2}\}/, "")
 				.trim();
 
 			// Found the line to update
 			if (cleanLineTitle === cleanOldTitle) {
-				const dateTag = newDate ? ` @${newDate}` : "";
-				return `- [ ] ${newTitle.trim()}${dateTag}`;
+				const dateTag = newNote.date ? ` @${newNote.date}` : "";
+				const checkbox = newNote.completed ? "[x]" : "[ ]";
+				return `- ${checkbox} ${newNote.title?.trim()}${dateTag}`;
 			}
 
 			return line;
@@ -270,7 +271,9 @@ export async function updateFleetingNote(
 
 		const newContent = newLines.join("\n");
 		await app.vault.modify(file, newContent);
-		console.log(`[FleetingNotes] Updated note: ${oldTitle} → ${newTitle}`);
+		console.log(
+			`[FleetingNotes] Updated note: ${oldNote.title} → ${newNote.title}`
+		);
 		return true;
 	} catch (error) {
 		console.error("[FleetingNotes] Error updating note:", error);
