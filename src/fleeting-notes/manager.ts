@@ -150,9 +150,9 @@ export class FleetingNotesManager {
 		addFleetingNote(this.app, note);
 	}
 
-	createNote(title: string, date?: Date) {
+	createNote(title: string, group: string, date?: Date) {
 		const dateStr = date ? formatDateToDefault(date) : undefined;
-		this.addNote({ title, date: dateStr });
+		this.addNote({ title, date: dateStr, source: group });
 	}
 
 	/**

@@ -1,7 +1,7 @@
 import { App, TFile } from "obsidian";
 import type { FleetingNote } from "../types/fleeting-note";
 import { simpleHash } from "../utils/hash";
-import { FLEETING_NOTES_FOLDER, FLEETING_NOTES_INBOX_FILE } from "./consts";
+import { FLEETING_NOTES_DEFAULT_FILE, FLEETING_NOTES_FOLDER } from "./consts";
 
 /**
  * Parse a markdown file and extract uncompleted tasks only
@@ -132,19 +132,20 @@ export async function addFleetingNote(
 	}
 
 	try {
-		const filePath = `${FLEETING_NOTES_FOLDER}/${FLEETING_NOTES_INBOX_FILE}`;
+		const groupName = note.source ?? FLEETING_NOTES_DEFAULT_FILE;
+		const filePath = `${FLEETING_NOTES_FOLDER}/${groupName}.md`;
 		let file = app.vault.getAbstractFileByPath(filePath);
 
 		const title = note.title.trim();
 		const dateTag = note.date ? ` @${note.date}` : "";
 
-		// Create Inbox.md if it doesn't exist
+		// Create {group file}.md if it doesn't exist
 		if (!file) {
 			file = await app.vault.create(
 				filePath,
-				`# Inbox\n\n- [ ] ${title}${dateTag}\n`
+				`# ${groupName}\n\n- [ ] ${title}${dateTag}\n`
 			);
-			console.log("[FleetingNotes] Created new note in Inbox");
+			console.log(`[FleetingNotes] Created new note in ${groupName}`);
 			return true;
 		}
 
@@ -155,7 +156,7 @@ export async function addFleetingNote(
 			: content + `\n- [ ] ${title}${dateTag}\n`;
 
 		await app.vault.modify(file as TFile, newContent);
-		console.log("[FleetingNotes] Note added to Inbox");
+		console.log(`[FleetingNotes] Note added to ${groupName}`);
 		return true;
 	} catch (error) {
 		console.error("[FleetingNotes] Error adding note:", error);
