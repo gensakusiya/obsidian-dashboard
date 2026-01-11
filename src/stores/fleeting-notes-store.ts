@@ -37,6 +37,10 @@ export const inboxNotes = derived(fleetingNotesStore, ($store) => {
 	return $store.notes[mainFile] || [];
 });
 
+export const noteGroups = derived(fleetingNotesStore, ($store) => {
+	return Object.keys($store.notes);
+});
+
 // Reactive derived store combining fleetingNotesStore and selectedDate
 export const inboxNotesOnDate = derived(
 	[fleetingNotesStore, selectedDate],
