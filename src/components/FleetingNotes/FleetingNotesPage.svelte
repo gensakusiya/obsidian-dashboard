@@ -1,17 +1,31 @@
 <script lang="ts">
+	import type { App } from "obsidian";
+
 	import List from "../Atoms/List.svelte";
 	import Accordion from "../Atoms/Accordion.svelte";
 	import AddIcon from "../Atoms/AddIcon.svelte";
 	import FleetingNoteItem from "./FleetingNoteItem.svelte";
 	import { fleetingNotesStore } from "../../stores/fleeting-notes-store";
+	import NewFleetingNoteDialog from "./NewFleetingNoteDialog.svelte";
+
+	interface FleetingNotesPageProps {
+		app: App;
+	}
+
+	let { app }: FleetingNotesPageProps = $props();
+
+	let dialogElement: HTMLDialogElement = $state(
+		document.createElement("dialog"),
+	);
 
 	let grouped = $derived($fleetingNotesStore.notes);
 	let isLoading = $derived($fleetingNotesStore.isLoading);
 	let error = $derived($fleetingNotesStore.error);
+	let addToGroup = $state<string | undefined>(undefined);
 
 	function handlerAddNote(groupName: string) {
-		//  manager.addNote(groupName);
-		console.log("Add note to group:", groupName);
+		addToGroup = groupName;
+		dialogElement?.showModal();
 	}
 </script>
 
@@ -49,6 +63,12 @@
 		</div>
 	{/if}
 </div>
+
+<NewFleetingNoteDialog
+	bind:dialog={dialogElement}
+	{app}
+	defaultGroupName={addToGroup}
+/>
 
 <style>
 	.fleeting-notes-page :global(.fleeting-notes-li) {

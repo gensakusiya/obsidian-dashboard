@@ -24,7 +24,7 @@
 		fleetingNoteGroupValue = $bindable(),
 		date = $bindable(),
 	}: FormProps = $props();
-	let currentDate = new Date();
+	const currentDate = new Date();
 	let datePickerEl: HTMLButtonElement | undefined = $state();
 	let isDatePickerOpen = $state(false);
 	let datePressed = $state<DatePreset | null>(null);
@@ -41,6 +41,12 @@
 		}
 
 		return formatDateToDisplay(date);
+	});
+	const groupOptions = $derived.by(() => {
+		return fleetingNoteGroup.map((group) => ({
+			value: group,
+			label: group,
+		}));
 	});
 
 	$effect(() => {
@@ -99,10 +105,7 @@
 />
 
 <Select
-	options={fleetingNoteGroup.map((group) => ({
-		value: group,
-		label: group,
-	}))}
+	options={groupOptions}
 	bind:value={fleetingNoteGroupValue}
 	ariaLabel="Fleeting note group select"
 />

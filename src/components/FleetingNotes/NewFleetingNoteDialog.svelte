@@ -1,6 +1,9 @@
 <script lang="ts">
 	import type { App } from "obsidian";
 
+	import { noteGroups } from "../../stores/fleeting-notes-store";
+	import { getFleetingNotesManager } from "../../fleeting-notes";
+
 	import Button from "../Atoms/Button.svelte";
 	import Dialog from "../Atoms/Dialog.svelte";
 	import Toolbox from "../Atoms/Toolbox.svelte";
@@ -10,29 +13,42 @@
 	interface DialogProps {
 		app: App;
 		dialog: HTMLDialogElement;
-		onCreate: (title: string, date?: Date) => void;
+		defaultGroupName?: string;
 	}
+
+	const fleetingNotesManager = getFleetingNotesManager();
 
 	let {
 		dialog = $bindable(),
 		app = $bindable(),
-		onCreate,
+		defaultGroupName,
 	}: DialogProps = $props();
 	let note: string = $state("");
 	let date: Date | undefined = $state(undefined);
-	let fleetingNoteGroup: string[] = $state([]);
-	let fleetingNoteGroupValue: string = $state("1");
+	let fleetingNoteGroup: string[] = $derived($noteGroups);
+	let fleetingNoteGroupValue: string = $state(
+		defaultGroupName || $noteGroups[0] || "",
+	);
+
+	$effect(() => {
+		if (defaultGroupName) {
+			fleetingNoteGroupValue =
+				defaultGroupName || fleetingNoteGroup[0] || "";
+		}
+	});
 
 	function closeDialog() {
 		if (dialog.open) {
 			dialog.close();
 			note = "";
 			date = undefined;
+			fleetingNoteGroupValue =
+				defaultGroupName || fleetingNoteGroup[0] || "";
 		}
 	}
 
 	function handleNoteAdded() {
-		onCreate(note, date);
+		fleetingNotesManager.createNote(note, fleetingNoteGroupValue, date);
 		closeDialog();
 	}
 </script>

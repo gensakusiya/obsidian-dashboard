@@ -26,7 +26,9 @@ export class FleetingNotesView extends ItemView {
 	async onOpen() {
 		this.component = mount(FleetingNotesPageComponent, {
 			target: this.contentEl,
-			props: {},
+			props: {
+				app: this.app,
+			},
 		});
 	}
 
