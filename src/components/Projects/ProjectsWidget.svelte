@@ -1,46 +1,35 @@
 <script lang="ts">
 	import type { App } from "obsidian";
-	import { formatDate } from "../../utils/date";
+
+	import type { Project } from "../../types/project";
+	import { VIEW_TYPE_PROJECTS } from "../../views/project";
+	import { projectsStore } from "../../stores/projects-store";
 	import { selectedDate } from "../../stores/store";
-	import { getAllProjects, type Project } from "../../projects";
+	import { formatDate } from "../../utils/date";
+
 	import Island from "../Island/Island.svelte";
 	import IslandHeader from "../Island/IslandHeader.svelte";
 
-	export let app: App;
-
-	let projects: Project[] = [];
-	let loading = true;
-	let error: string | null = null;
-
-	// Load projects on mount
-	$: if (app) {
-		loadProjects();
+	interface ProjectsWidgetProps {
+		app: App;
 	}
 
-	async function loadProjects() {
-		loading = true;
-		error = null;
-		try {
-			console.log("[ProjectsWidget] Loading projects...");
-			projects = await getAllProjects(app);
-		} catch (e) {
-			console.error("Failed to load projects:", e);
-			error = "Failed to load projects";
-			projects = [];
-		} finally {
-			loading = false;
-			console.log("Projects loaded:", projects);
-		}
-	}
+	let { app }: ProjectsWidgetProps = $props();
 
-	function handleProjectClick(project: Project) {
-		// Future: Open project kanban board
+	const isLoading = $derived($projectsStore.isLoading);
+	const error: string | null = $derived($projectsStore.error);
+	const projects: Project[] = $derived($projectsStore.projects);
+
+	const handleProjectClick = (project: Project) => {
+		// Future: Open project file or view project details
 		console.log("Project clicked:", project);
-	}
+	};
 
-	function handleViewAll() {
-		// Future: Implement view all projects functionality
-		console.log("View All Projects clicked");
+	async function handleViewAll() {
+		await app.workspace.getLeaf(false).setViewState({
+			type: VIEW_TYPE_PROJECTS,
+			active: true,
+		});
 	}
 </script>
 
@@ -54,7 +43,8 @@
 		/>
 	{/snippet}
 
-	{#if loading}
+	<div></div>
+	{#if isLoading}
 		<div class="panel-loading">Loading projects...</div>
 	{:else if error}
 		<div class="panel-error">{error}</div>
@@ -70,7 +60,7 @@
 			{#each projects as project (project.name)}
 				<button
 					class="project-item"
-					on:click={() => handleProjectClick(project)}
+					onclick={() => handleProjectClick(project)}
 				>
 					<div class="project-content">
 						<span class="project-name">{project.name}</span>

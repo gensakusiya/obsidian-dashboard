@@ -22,3 +22,9 @@ export interface KanbanTask {
 	priority?: Priority;
 	dueDate?: Date;
 }
+
+export interface Project {
+	name: string;
+	taskCount: number;
+	inProgressCount: number;
+}

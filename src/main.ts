@@ -10,16 +10,20 @@ import {
 	FleetingNotesView,
 	VIEW_TYPE_FLEETING_NOTES,
 } from "./views/fleeting-notes";
+import { ProjectsView, VIEW_TYPE_PROJECTS } from "./views/project";
 import { initializeVaultStructure } from "./utils/initialization";
-import {
-	createFleetingNotesManager,
-	getFleetingNotesManager,
-} from "./fleeting-notes";
-import { ConfigManager, createConfigManager } from "./config";
 import {
 	initFleetingNotesStore,
 	destroyFleetingNotesStore,
 } from "./stores/fleeting-notes-store";
+import {
+	destroyProjectsStore,
+	initProjectsStore,
+} from "./stores/projects-store";
+import type { DashboardManager } from "./core/manager";
+import { ConfigManager, createConfigManager } from "./config";
+import { createFleetingNotesManager } from "./fleeting-notes";
+import { createProjectsManager } from "./projects";
 
 interface DashboardPluginSettings {
 	mode: string;
@@ -34,17 +38,24 @@ const VIEW_TYPE_DASHBOARD = "dashboard-view";
 export default class DashboardPlugin extends Plugin {
 	configManager: ConfigManager;
 
+	managers: DashboardManager[] = [];
+
 	async onload() {
 		this.configManager = createConfigManager(this);
-		const fleetingNotesManager = createFleetingNotesManager(this.app);
+
+		this.managers.push(createFleetingNotesManager(this.app));
+		this.managers.push(createProjectsManager(this.app));
 
 		if (!this.app.workspace.layoutReady) {
 			this.app.workspace.onLayoutReady(async () => {
 				initializeVaultStructure(this.app);
 
-				await fleetingNotesManager.initialize();
+				for (const manager of this.managers) {
+					await manager.initialize();
+				}
 
 				initFleetingNotesStore();
+				initProjectsStore();
 			});
 		}
 
@@ -59,6 +70,7 @@ export default class DashboardPlugin extends Plugin {
 			VIEW_TYPE_FLEETING_NOTES,
 			(leaf) => new FleetingNotesView(leaf)
 		);
+		this.registerView(VIEW_TYPE_PROJECTS, (leaf) => new ProjectsView(leaf));
 
 		// Create ribbon icon for Dashboard
 		this.addRibbonIcon("dice", "Open Dashboard", async () => {
@@ -113,10 +125,10 @@ export default class DashboardPlugin extends Plugin {
 	}
 
 	onunload() {
-		const manager = getFleetingNotesManager();
-		manager.destroy();
+		this.managers.forEach((manager) => manager.destroy());
 
 		destroyFleetingNotesStore();
+		destroyProjectsStore();
 	}
 
 	async loadSettings() {
