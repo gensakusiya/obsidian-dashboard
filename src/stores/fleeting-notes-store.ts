@@ -62,7 +62,6 @@ let unsubscribeFns: Array<() => void> = [];
 
 export function initFleetingNotesStore() {
 	if (isInitialized) {
-		console.log("[FleetingNotesStore] Already initialized");
 		return;
 	}
 
@@ -72,7 +71,7 @@ export function initFleetingNotesStore() {
 
 	// Apply grouping and sorting
 	function updateStore() {
-		const notes = notesManager.notes;
+		const notes = notesManager.data;
 		const config = configManager.getConfig();
 
 		const ordered: Record<string, FleetingNote[]> = applySortingToNotes(
@@ -103,8 +102,6 @@ export function initFleetingNotesStore() {
 
 	// Initial load
 	updateStore();
-
-	console.log("[FleetingNotesStore] Initialized");
 }
 
 export function destroyFleetingNotesStore() {
@@ -113,5 +110,4 @@ export function destroyFleetingNotesStore() {
 	}
 	unsubscribeFns = [];
 	isInitialized = false;
-	console.log("[FleetingNotesStore] Destroyed");
 }

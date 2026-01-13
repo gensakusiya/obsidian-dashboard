@@ -8,6 +8,7 @@ import {
 	updateFleetingNote,
 } from "./parser";
 import { FLEETING_NOTES_DEFAULT_FILE, FLEETING_NOTES_FOLDER } from "./consts";
+import { DashboardManager } from "../core/manager";
 
 /**
  * FleetingNotesManager - Singleton manager for fleeting notes
@@ -21,100 +22,25 @@ import { FLEETING_NOTES_DEFAULT_FILE, FLEETING_NOTES_FOLDER } from "./consts";
  *   const manager = getFleetingNotesManager();
  *   let { notes } = $derived.by(() => ({ notes: manager.notes }));
  */
-export class FleetingNotesManager {
-	private app: App;
-	private unsubscribers: Array<() => void> = [];
-	private listeners: Set<() => void> = new Set();
-
-	notes: Record<string, FleetingNote[]> = {};
-	isLoading = true; // Start with loading state until initialize() is called
-	error: string | null = null;
+export class FleetingNotesManager extends DashboardManager<
+	Record<string, FleetingNote[]>
+> {
+	FILE_FOLDER = FLEETING_NOTES_FOLDER;
 	inboxGroup = FLEETING_NOTES_DEFAULT_FILE;
 
 	constructor(app: App) {
-		this.app = app;
+		super(app);
 	}
 
-	private isFleetingNotesFile(file: TAbstractFile): boolean {
-		return file.path.startsWith(`${FLEETING_NOTES_FOLDER}/`);
-	}
-
-	private notifyListeners() {
-		for (const listener of this.listeners) {
-			listener();
-		}
-	}
-
-	private setupFileWatchers() {
-		const onModify = (file: TAbstractFile) => {
-			if (this.isFleetingNotesFile(file)) {
-				this.refresh();
-			}
-		};
-
-		const onCreate = (file: TAbstractFile) => {
-			if (this.isFleetingNotesFile(file)) {
-				this.refresh();
-			}
-		};
-
-		const onDelete = (file: TAbstractFile) => {
-			if (this.isFleetingNotesFile(file)) {
-				this.refresh();
-			}
-		};
-
-		const onRename = (file: TAbstractFile) => {
-			if (this.isFleetingNotesFile(file)) {
-				this.refresh();
-			}
-		};
-
-		this.app.vault.on("modify", onModify);
-		this.app.vault.on("create", onCreate);
-		this.app.vault.on("delete", onDelete);
-		this.app.vault.on("rename", onRename);
-
-		// Store unsubscribers
-		this.unsubscribers.push(
-			() => this.app.vault.off("modify", onModify),
-			() => this.app.vault.off("create", onCreate),
-			() => this.app.vault.off("delete", onDelete),
-			() => this.app.vault.off("rename", onRename)
-		);
-	}
-
-	async initialize() {
-		await this.refresh();
-		this.setupFileWatchers();
-	}
-
-	async refresh() {
-		this.isLoading = true;
-		this.error = null;
-
-		try {
-			const data = await getAllFleetingNotes(this.app);
-			this.notes = data;
-		} catch (err) {
-			console.error("[FleetingNotes] Error refreshing notes:", err);
-			this.error = err instanceof Error ? err.message : "Unknown error";
-		} finally {
-			this.isLoading = false;
-			this.notifyListeners();
-		}
-	}
-
-	subscribe(callback: () => void): () => void {
-		this.listeners.add(callback);
-		return () => this.listeners.delete(callback);
+	getData(app: App): Promise<Record<string, FleetingNote[]>> {
+		return getAllFleetingNotes(app);
 	}
 
 	filterNotes(options?: {
 		searchText?: string;
 		date?: Date;
 	}): Record<string, FleetingNote[]> {
-		let filtered = this.notes;
+		let filtered = this.data;
 
 		const filterText = options?.searchText?.toLowerCase();
 		const filterDate = options?.date;
@@ -165,17 +91,6 @@ export class FleetingNotesManager {
 	createNote(title: string, group: string, date?: Date) {
 		const dateStr = date ? formatDateToDefault(date) : undefined;
 		this.addNote({ title, date: dateStr, source: group });
-	}
-
-	/**
-	 * Cleanup and unsubscribe from all watchers
-	 */
-	destroy() {
-		for (const unsubscribe of this.unsubscribers) {
-			unsubscribe();
-		}
-		this.unsubscribers = [];
-		this.listeners.clear();
 	}
 }
 
